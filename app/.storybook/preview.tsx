@@ -4,20 +4,24 @@ import { appTheme } from '../src/theme'
 
 const preview: Preview = {
   decorators: [
-    (Story) => (
+    (Story, context) => (
       <ThemeProvider theme={appTheme}>
         <CssBaseline />
-        <Box
-          sx={{
-            alignItems: 'center',
-            display: 'flex',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            p: 3,
-          }}
-        >
+        {context.parameters.appScreen === true ? (
           <Story />
-        </Box>
+        ) : (
+          <Box
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              minHeight: '100vh',
+              p: 3,
+            }}
+          >
+            <Story />
+          </Box>
+        )}
       </ThemeProvider>
     ),
   ],

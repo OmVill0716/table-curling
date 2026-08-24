@@ -27,4 +27,4 @@ npm run verify
 
 各コマンドと成果物は[アプリREADME](./app/README.md)を参照する。
 
-Phase 1の開発・テスト環境は構築済み。ゲーム機能は後続Phaseで実装する。
+Phase 1の開発・テスト環境、Phase 2のPhysics基盤・調整、Phase 3の全画面・画面遷移まで実装済み。Physicsと画面を接続する5投のゲーム進行はPhase 4で実装する。
