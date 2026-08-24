@@ -17,7 +17,7 @@ ADR-020で4種類の効果音をMVPへ追加すると決定したが、素材、
   - 全ストーン停止: Impact Soundsの`footstep_carpet_000.ogg`
   - コースアウト: Digital Audioの`zapThreeToneDown.ogg`
 - 素材は再エンコードせず、配布元と同じOgg Vorbis形式で保持する
-- ライセンスはCC0とし、配布元URL、元ファイル名、取得日、SHA-256、同梱ライセンス文書を`public/audio/README.md`へ記録する
+- ライセンスはCC0とし、配布元URL、元ファイル名、取得日、SHA-256、同梱ライセンス文書を`app/public/audio/README.md`へ記録する
 - 古いブラウザ向けのWAVまたはMP3フォールバックはMVPへ追加しない
 - 衝突音は意図的な演出として鐘の音を採用する
 - 衝突が連続した際の弱い接触の除外、再生間隔、音量は、実装後に試聴して調整する。未調整の数値を本ADRでは固定しない

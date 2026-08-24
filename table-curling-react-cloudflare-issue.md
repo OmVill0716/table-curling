@@ -606,7 +606,7 @@ CSS / Canvasの色・パターン等で簡易表現してよい。
 - OFFでは再生を開始せず、切り替え時に再生中の音があれば停止する
 - 音声再生に失敗してもゲーム進行、Physics、採点を継続する
 - 効果音は状態を知る唯一の手段にせず、画面上でも判別できるようにする
-- 効果音はKenneyのCC0素材をOgg Vorbisのまま同梱し、出典・元ファイル名・ハッシュ・ライセンスを`public/audio/README.md`へ記録する
+- 効果音はKenneyのCC0素材をOgg Vorbisのまま同梱し、出典・元ファイル名・ハッシュ・ライセンスを`app/public/audio/README.md`へ記録する
 - 投射は`/audio/shot.ogg`、ストーン衝突は`/audio/stone-collision.ogg`、全ストーン停止は`/audio/all-stones-stopped.ogg`、コースアウトは`/audio/out-of-bounds.ogg`を使用する
 - TOP表示後に4音源をバックグラウンドで読み込み、最初のユーザー操作時に音声機能の有効化を試みる
 - 未準備または再生不能な音はゲームを待たせず、そのイベントの音を後から再生しない
