@@ -44,6 +44,6 @@ npm run test:e2e
 npm run build-storybook
 ```
 
-production buildは`dist/`、Storybook buildは`storybook-static/`へ生成される。Cloudflare Pagesへ公開するのは`dist/`だけであり、デプロイはPhase 1の対象外。
+production buildは`dist/`、Storybook buildは`storybook-static/`へ生成される。Cloudflare Pagesへ公開するのは`dist/`だけである。
 
-ゲーム機能は後続Phaseで実装する。Phase 1では開発・テスト環境を確認する最小画面だけを表示する。
+Phase 3までに全画面、Zustandによる画面遷移、Game Screenのレスポンシブな外枠を実装している。Game ScreenとPhysics Runtimeの接続、投射、5投の進行、採点はPhase 4で実装する。
