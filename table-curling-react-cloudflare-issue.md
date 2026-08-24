@@ -606,7 +606,7 @@ CSS / Canvasの色・パターン等で簡易表現してよい。
 - OFFでは再生を開始せず、切り替え時に再生中の音があれば停止する
 - 音声再生に失敗してもゲーム進行、Physics、採点を継続する
 - 効果音は状態を知る唯一の手段にせず、画面上でも判別できるようにする
-- 効果音はKenneyのCC0素材をOgg Vorbisのまま同梱し、出典・元ファイル名・ハッシュ・ライセンスを`public/audio/README.md`へ記録する
+- 効果音はKenneyのCC0素材をOgg Vorbisのまま同梱し、出典・元ファイル名・ハッシュ・ライセンスを`app/public/audio/README.md`へ記録する
 - 投射は`/audio/shot.ogg`、ストーン衝突は`/audio/stone-collision.ogg`、全ストーン停止は`/audio/all-stones-stopped.ogg`、コースアウトは`/audio/out-of-bounds.ogg`を使用する
 - TOP表示後に4音源をバックグラウンドで読み込み、最初のユーザー操作時に音声機能の有効化を試みる
 - 未準備または再生不能な音はゲームを待たせず、そのイベントの音を後から再生しない
@@ -691,6 +691,7 @@ GitHub ActionsなどのCIは導入せず、テスト、ビルド、デプロイ�
 Cloudflare側ではビルドさせず、ローカルでビルドする。
 
 ```bash
+cd app
 npm ci
 npm run build
 ```
@@ -698,7 +699,7 @@ npm run build
 生成物:
 
 ```text
-dist/
+app/dist/
 ```
 
 をCloudflare Pagesへアップロードする。
@@ -706,6 +707,7 @@ dist/
 例:
 
 ```bash
+cd app
 npx wrangler pages deploy dist
 ```
 
@@ -749,32 +751,33 @@ React Routerは使用しない。ブラウザゲームとして、TOP、フィ�
 例:
 
 ```text
-src/
-├─ components/
-│  └─ *.stories.tsx
-├─ screens/
-├─ game/
-│  ├─ audio/
-│  │  ├─ audioAdapter.ts
-│  │  └─ __stories__/
-│  │     └─ CollisionAudioCalibration.stories.tsx
-│  ├─ physics/
-│  │  ├─ matterAdapter.ts
-│  │  ├─ createBodies.ts
-│  │  ├─ gamePhysicsRules.ts
-│  │  └─ __stories__/
-│  │     ├─ PhysicsCalibration.stories.tsx
-│  │     └─ PhysicsCalibrationHarness.tsx
-│  ├─ runtime/
-│  ├─ renderer/
-│  ├─ scoring/
-│  └─ types.ts
-├─ stores/
-├─ config/
-│  ├─ audio.ts
-│  ├─ physics.ts
-│  └─ surfaces.ts
-└─ test/
+app/
+└─ src/
+   ├─ components/
+   │  └─ *.stories.tsx
+   ├─ screens/
+   ├─ game/
+   │  ├─ audio/
+   │  │  ├─ audioAdapter.ts
+   │  │  └─ __stories__/
+   │  │     └─ CollisionAudioCalibration.stories.tsx
+   │  ├─ physics/
+   │  │  ├─ matterAdapter.ts
+   │  │  ├─ createBodies.ts
+   │  │  ├─ gamePhysicsRules.ts
+   │  │  └─ __stories__/
+   │  │     ├─ PhysicsCalibration.stories.tsx
+   │  │     └─ PhysicsCalibrationHarness.tsx
+   │  ├─ runtime/
+   │  ├─ renderer/
+   │  ├─ scoring/
+   │  └─ types.ts
+   ├─ stores/
+   ├─ config/
+   │  ├─ audio.ts
+   │  ├─ physics.ts
+   │  └─ surfaces.ts
+   └─ test/
 ```
 
 構成は実装中に改善してよいが、
@@ -804,7 +807,7 @@ productionアプリには物理調整画面、デバッグメニュー、デバ�
 - 最低PowerのFELT直線投射、最大PowerのFELT・LONG、Surface比較、正面衝突、停止判定のプリセットを用意する
 - 候補値を共通設定形式のJSONとしてコピーできる
 - 自動最適化、自動保存、設定ファイルの自動更新は行わず、採用値を確認して手動反映する
-- Calibration StoryとHarnessをproductionの`dist/`へ含めず、`storybook-static/`もCloudflare Pagesへ公開しない
+- Calibration StoryとHarnessをproductionの`app/dist/`へ含めず、`app/storybook-static/`もCloudflare Pagesへ公開しない
 
 ### Collision Audio Calibration Story
 

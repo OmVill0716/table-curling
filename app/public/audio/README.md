@@ -2,7 +2,7 @@
 
 取得日: 2026-08-23
 
-選定経緯と利用方針は[ADR-025](../../ADR/ADR-025-bundle-selected-kenney-sound-effects.md)を参照する。全ファイルは配布元のOgg Vorbisを再エンコードせず、用途が分かる名前へ変更して同梱している。
+選定経緯と利用方針は[ADR-025](../../../ADR/ADR-025-bundle-selected-kenney-sound-effects.md)を参照する。全ファイルは配布元のOgg Vorbisを再エンコードせず、用途が分かる名前へ変更して同梱している。
 
 | 用途 | 配置ファイル | 配布元ファイル | パック | SHA-256 |
 | --- | --- | --- | --- | --- |

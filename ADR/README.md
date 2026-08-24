@@ -66,6 +66,14 @@ ADRは、Table Curlingの重要な設計判断について、背景、決定、�
 | [ADR-006](./ADR-006-runtime-state-ownership.md) | 高頻度状態をPhysics Runtimeが所有する |
 | [ADR-010](./ADR-010-store-category-high-scores-locally.md) | カテゴリー別ハイスコアをlocalStorageへ保存する |
 
+### アプリケーション構成
+
+関連設計: [`module-structure.md`](../docs/design/module-structure.md)
+
+| ADR | 判断 |
+| --- | --- |
+| [ADR-033](./ADR-033-self-contained-static-spa-under-app.md) | 単一の静的SPAを`app/`配下へ自己完結させる |
+
 ### 音声
 
 関連仕様: [`audio.md`](../docs/specifications/audio.md)

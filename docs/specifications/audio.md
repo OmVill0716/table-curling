@@ -25,7 +25,7 @@
 | 全ストーン停止 | `/audio/all-stones-stopped.ogg` | `footstep_carpet_000.ogg` |
 | コースアウト | `/audio/out-of-bounds.ogg` | `zapThreeToneDown.ogg` |
 
-選定素材はOgg Vorbisのままアプリへ同梱し、古いブラウザ向けの別形式はMVPでは用意しない。出典とライセンスは[`public/audio/README.md`](../../public/audio/README.md)を参照する。
+選定素材はOgg Vorbisのままアプリへ同梱し、古いブラウザ向けの別形式はMVPでは用意しない。出典とライセンスは[`app/public/audio/README.md`](../../app/public/audio/README.md)を参照する。
 
 ## 3. 衝突音
 

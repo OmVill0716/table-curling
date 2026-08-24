@@ -5,36 +5,43 @@
 ## 1. 推奨ディレクトリ
 
 ```text
-.storybook/
-e2e/
-src/
-├─ components/
-│  └─ *.stories.tsx
-├─ screens/
-├─ game/
-│  ├─ audio/
-│  │  ├─ audioAdapter.ts
-│  │  └─ __stories__/
-│  │     └─ CollisionAudioCalibration.stories.tsx
-│  ├─ physics/
-│  │  ├─ matterAdapter.ts
-│  │  ├─ createBodies.ts
-│  │  ├─ gamePhysicsRules.ts
-│  │  └─ __stories__/
-│  │     ├─ PhysicsCalibration.stories.tsx
-│  │     └─ PhysicsCalibrationHarness.tsx
-│  ├─ runtime/
-│  ├─ renderer/
-│  ├─ scoring/
-│  └─ types.ts
-├─ persistence/
-├─ stores/
-├─ config/
-│  ├─ audio.ts
-│  ├─ physics.ts
-│  └─ surfaces.ts
-└─ test/
+ADR/
+docs/
+app/
+├─ .storybook/
+├─ e2e/
+├─ public/
+│  └─ audio/
+└─ src/
+   ├─ components/
+   │  └─ *.stories.tsx
+   ├─ screens/
+   ├─ game/
+   │  ├─ audio/
+   │  │  ├─ audioAdapter.ts
+   │  │  └─ __stories__/
+   │  │     └─ CollisionAudioCalibration.stories.tsx
+   │  ├─ physics/
+   │  │  ├─ matterAdapter.ts
+   │  │  ├─ createBodies.ts
+   │  │  ├─ gamePhysicsRules.ts
+   │  │  └─ __stories__/
+   │  │     ├─ PhysicsCalibration.stories.tsx
+   │  │     └─ PhysicsCalibrationHarness.tsx
+   │  ├─ runtime/
+   │  ├─ renderer/
+   │  ├─ scoring/
+   │  └─ types.ts
+   ├─ persistence/
+   ├─ stores/
+   ├─ config/
+   │  ├─ audio.ts
+   │  ├─ physics.ts
+   │  └─ surfaces.ts
+   └─ test/
 ```
+
+アプリ本体、依存関係、公開素材、開発・テスト設定は[ADR-033](../../ADR/ADR-033-self-contained-static-spa-under-app.md)に従って`app/`へ自己完結させる。リポジトリルートにNode.jsのpackage管理ファイルを置かず、npmコマンドは`app/`で実行する。
 
 実装開始時は責務に必要な最小ファイルだけを作成する。上記の構成を満たすために、空ディレクトリや利用しない抽象化を先に作らない。
 

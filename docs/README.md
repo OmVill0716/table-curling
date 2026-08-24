@@ -35,7 +35,7 @@
 - 遊び方はTOPから任意に開く静的画面とし、強制チュートリアルや既読保存を設けない
 - PCのChrome・Edge・Safariと、Android版Chrome・iOS版Safariの現行安定版を正式サポートする
 - Physicsパラメータはproductionアプリへ調整画面を設けず、StorybookのCalibration Storyで比較・調整する
-- ビルド済みの`dist/`をCloudflare PagesへDirect Uploadする
+- ビルド済みの`app/dist/`をCloudflare PagesへDirect Uploadする
 
 ## ADR一覧
 
