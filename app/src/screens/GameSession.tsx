@@ -5,7 +5,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import { PHYSICS_TUNING } from '../config/physics'
+import { PHYSICS_STEP_MS, PHYSICS_TUNING } from '../config/physics'
+import { useAudioAdapter } from '../game/audio/useAudioAdapter'
 import { findLaunchPosition } from '../game/physics/gamePhysicsRules'
 import {
   createCameraForLaunch,
@@ -25,6 +26,7 @@ import {
 import { scoreGame } from '../game/scoring/scoreGame'
 import type {
   PhysicsSnapshot,
+  StoneCollisionEvent,
   Surface,
   ThrowDistance,
 } from '../game/types'
@@ -52,6 +54,7 @@ function modeForPhase(
 }
 
 export function GameSession({ surface, throwDistance }: GameSessionProps) {
+  const audio = useAudioAdapter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const viewportRef = useRef<CanvasViewport | null>(null)
   const cameraRef = useRef<Camera | null>(null)
@@ -146,7 +149,25 @@ export function GameSession({ surface, throwDistance }: GameSessionProps) {
       runtime = createPhysicsRuntime({
         surface,
         tuning: PHYSICS_TUNING,
+        onEvents: (events) => {
+          const collisions = events.filter(
+            (event): event is StoneCollisionEvent =>
+              event.type === 'stoneCollision',
+          )
+          if (collisions.length > 0) {
+            audio.playCollision(
+              collisions,
+              collisions[0].stepCount * PHYSICS_STEP_MS,
+            )
+          }
+          for (const event of events) {
+            if (event.type === 'outOfBounds') {
+              audio.play('outOfBounds')
+            }
+          }
+        },
         onComplete: (snapshot) => {
+          audio.play('allStonesStopped')
           const nextCompletedShots = completedShotsRef.current + 1
           completeShot(
             snapshot,
@@ -199,6 +220,7 @@ export function GameSession({ surface, throwDistance }: GameSessionProps) {
     }
   }, [
     completeShot,
+    audio,
     maxShots,
     renderSnapshot,
     reportSessionError,
@@ -307,6 +329,7 @@ export function GameSession({ surface, throwDistance }: GameSessionProps) {
       const power = runtime.releaseCharging()
       const stoneId = `stone-${completedShotsRef.current + 1}`
       runtime.launchStone(stoneId, power)
+      audio.play('shot')
       launchStarted()
       gamePhaseRef.current = 'moving'
       scheduler.setMode('moving')
@@ -315,7 +338,7 @@ export function GameSession({ surface, throwDistance }: GameSessionProps) {
       scheduler.setMode('static')
       reportSessionError(error)
     }
-  }, [cancelCharging, launchStarted, reportSessionError])
+  }, [audio, cancelCharging, launchStarted, reportSessionError])
 
   const handleChargeCancel = useCallback(() => {
     const runtime = runtimeRef.current
