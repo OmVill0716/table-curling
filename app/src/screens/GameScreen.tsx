@@ -1,5 +1,11 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material'
+import { useLayoutEffect, useRef } from 'react'
 import { AppShell } from '../components/AppShell'
+import {
+  fitCanvasCssSize,
+  getCanvasViewport,
+  resizeCanvas,
+} from '../game/renderer/canvasSizing'
 import type { Surface, ThrowDistance } from '../game/types'
 import type { GamePhase } from '../stores/gameStore'
 
@@ -18,6 +24,86 @@ const phaseLabels: Readonly<Record<GamePhase, string>> = {
   charging: 'Power調整中',
   moving: 'ストーン移動中',
   review: '投射完了',
+}
+
+function StaticGameBoard() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useLayoutEffect(() => {
+    const container = containerRef.current
+    const canvas = canvasRef.current
+    if (container === null || canvas === null) {
+      return
+    }
+
+    const resize = () => {
+      const { width, height } = container.getBoundingClientRect()
+      const cssSize = fitCanvasCssSize(width, height)
+      resizeCanvas(
+        canvas,
+        getCanvasViewport(cssSize.width, cssSize.height, window.devicePixelRatio),
+      )
+    }
+
+    resize()
+    const observer = new ResizeObserver(resize)
+    observer.observe(container)
+
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <Box
+      ref={containerRef}
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        height: '100%',
+        justifyContent: 'center',
+        minHeight: 0,
+        minWidth: 0,
+        width: '100%',
+      }}
+    >
+      <Box
+        aria-describedby="game-board-description"
+        aria-label="カーリング盤面"
+        component="canvas"
+        ref={canvasRef}
+        role="img"
+        sx={{
+          backgroundColor: 'background.paper',
+          backgroundImage:
+            'radial-gradient(circle at 50% 22%, #ef6461 0 6%, #f6c85f 6.5% 12%, #55a6d9 12.5% 18%, #75c8ae 18.5% 24%, transparent 24.5%), linear-gradient(180deg, rgba(255,255,255,0.86), rgba(219,238,245,0.96))',
+          border: '3px solid',
+          borderColor: 'text.primary',
+          borderRadius: 2,
+          boxShadow: '0 8px 24px rgba(21, 48, 71, 0.18)',
+          boxSizing: 'border-box',
+          display: 'block',
+          flex: '0 0 auto',
+          touchAction: 'none',
+        }}
+      />
+      <Typography
+        id="game-board-description"
+        sx={{
+          border: 0,
+          clip: 'rect(0 0 0 0)',
+          height: '1px',
+          margin: -1,
+          overflow: 'hidden',
+          padding: 0,
+          position: 'absolute',
+          whiteSpace: 'nowrap',
+          width: '1px',
+        }}
+      >
+        ターゲットへ向けてストーンを投射する縦長の盤面
+      </Typography>
+    </Box>
+  )
 }
 
 export function GameScreen({
@@ -85,46 +171,7 @@ export function GameScreen({
             minWidth: 0,
           }}
         >
-          <Box
-            aria-describedby="game-board-description"
-            aria-label="カーリング盤面"
-            component="canvas"
-            height={1000}
-            role="img"
-            sx={{
-              aspectRatio: '3 / 5',
-              backgroundColor: 'background.paper',
-              backgroundImage:
-                'radial-gradient(circle at 50% 22%, #ef6461 0 6%, #f6c85f 6.5% 12%, #55a6d9 12.5% 18%, #75c8ae 18.5% 24%, transparent 24.5%), linear-gradient(180deg, rgba(255,255,255,0.86), rgba(219,238,245,0.96))',
-              border: '3px solid',
-              borderColor: 'text.primary',
-              borderRadius: 2,
-              boxShadow: '0 8px 24px rgba(21, 48, 71, 0.18)',
-              display: 'block',
-              height: '100%',
-              maxHeight: '100%',
-              maxWidth: '100%',
-              touchAction: 'none',
-              width: 'auto',
-            }}
-            width={600}
-          />
-          <Typography
-            id="game-board-description"
-            sx={{
-              border: 0,
-              clip: 'rect(0 0 0 0)',
-              height: 1,
-              margin: -1,
-              overflow: 'hidden',
-              padding: 0,
-              position: 'absolute',
-              whiteSpace: 'nowrap',
-              width: 1,
-            }}
-          >
-            ターゲットへ向けてストーンを投射する縦長の盤面
-          </Typography>
+          <StaticGameBoard />
         </Box>
 
         <Paper

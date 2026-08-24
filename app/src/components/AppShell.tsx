@@ -25,9 +25,12 @@ export function AppShell({ children, game = false, maxWidth = 760 }: AppShellPro
           : 'radial-gradient(circle at 50% -20%, #ffffff 0%, #eaf5fb 52%, #cfe8f3 100%)',
         boxSizing: 'border-box',
         height: game ? '100dvh' : 'auto',
-        minHeight: '100svh',
+        minHeight: game ? 0 : '100svh',
         overflow: game ? 'hidden' : 'auto',
         width: '100%',
+        '@supports not (height: 100dvh)': game
+          ? { height: '100vh' }
+          : undefined,
         '@media (prefers-reduced-motion: reduce)': {
           '& *, & *::before, & *::after': {
             scrollBehavior: 'auto !important',
