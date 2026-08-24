@@ -1,5 +1,13 @@
 import { createStore } from 'zustand/vanilla'
-import type { GameResult, Surface, ThrowDistance } from '../game/types'
+import type {
+  GameResult,
+  PhysicsSnapshot,
+  PowerReading,
+  PowerDirection,
+  StoneSnapshot,
+  Surface,
+  ThrowDistance,
+} from '../game/types'
 
 export type Screen =
   | 'top'
@@ -20,7 +28,12 @@ export interface GameState {
   readonly gamePhase: GamePhase | null
   readonly completedShots: number
   readonly maxShots: 5
+  readonly displayedPower: number | null
+  readonly powerDirection: PowerDirection | null
+  readonly settledStones: readonly StoneSnapshot[]
   readonly result: GameResult | null
+  readonly retireConfirmationOpen: boolean
+  readonly resumePhaseAfterRetire: GamePhase | null
   readonly soundEnabled: boolean
 }
 
@@ -32,7 +45,20 @@ export interface GameActions {
   readonly selectThrowDistance: (distance: ThrowDistance) => void
   readonly backFromSetup: () => void
   readonly startGame: () => void
-  readonly showResult: (result: GameResult) => void
+  readonly startCharging: (reading: PowerReading) => void
+  readonly updateDisplayedPower: (reading: PowerReading) => void
+  readonly launchStarted: () => void
+  readonly cancelCharging: () => void
+  readonly completeShot: (
+    snapshot: PhysicsSnapshot,
+    finalResult?: GameResult,
+  ) => void
+  readonly prepareNextShot: () => void
+  readonly viewResult: () => void
+  readonly openRetireConfirmation: () => void
+  readonly closeRetireConfirmation: () => void
+  readonly confirmRetire: () => void
+  readonly handlePageHidden: () => void
   readonly retryGame: () => void
   readonly leaveResultForTop: () => void
   readonly returnToTop: () => void
@@ -52,7 +78,12 @@ export function createInitialGameState(
     gamePhase: null,
     completedShots: 0,
     maxShots: 5,
+    displayedPower: null,
+    powerDirection: null,
+    settledStones: [],
     result: null,
+    retireConfirmationOpen: false,
+    resumePhaseAfterRetire: null,
     soundEnabled: true,
     ...overrides,
   }
@@ -67,7 +98,12 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
         screen: 'fieldSelect',
         gamePhase: null,
         completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
         result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
       })
     },
 
@@ -123,21 +159,198 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
         screen: 'game',
         gamePhase: 'ready',
         completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
         result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
       })
     },
 
-    showResult: (result) => {
-      const { screen, surface, throwDistance } = get()
-      if (screen !== 'game' || surface === null || throwDistance === null) {
+    startCharging: ({ value, direction }) => {
+      const { screen, gamePhase, retireConfirmationOpen } = get()
+      if (
+        screen !== 'game' ||
+        gamePhase !== 'ready' ||
+        retireConfirmationOpen
+      ) {
+        return
+      }
+
+      set({
+        gamePhase: 'charging',
+        displayedPower: value,
+        powerDirection: direction,
+      })
+    },
+
+    updateDisplayedPower: ({ value, direction }) => {
+      const state = get()
+      if (state.screen !== 'game' || state.gamePhase !== 'charging') {
+        return
+      }
+      if (
+        state.displayedPower === value &&
+        state.powerDirection === direction
+      ) {
+        return
+      }
+
+      set({ displayedPower: value, powerDirection: direction })
+    },
+
+    launchStarted: () => {
+      if (get().screen !== 'game' || get().gamePhase !== 'charging') {
+        return
+      }
+
+      set({
+        gamePhase: 'moving',
+        displayedPower: null,
+        powerDirection: null,
+      })
+    },
+
+    cancelCharging: () => {
+      if (get().screen !== 'game' || get().gamePhase !== 'charging') {
+        return
+      }
+
+      set({
+        gamePhase: 'ready',
+        displayedPower: null,
+        powerDirection: null,
+      })
+    },
+
+    completeShot: (snapshot, finalResult) => {
+      const state = get()
+      if (state.screen !== 'game' || state.gamePhase !== 'moving') {
+        return
+      }
+
+      const completedShots = state.completedShots + 1
+      const isFinalShot = completedShots === state.maxShots
+      if (completedShots > state.maxShots) {
+        return
+      }
+      if (isFinalShot !== (finalResult !== undefined)) {
+        return
+      }
+
+      set({
+        completedShots,
+        gamePhase: 'review',
+        settledStones: snapshot.stones.map((stone) => ({
+          ...stone,
+          position: { ...stone.position },
+          velocity: { ...stone.velocity },
+        })),
+        result: finalResult ?? null,
+      })
+    },
+
+    prepareNextShot: () => {
+      const state = get()
+      if (
+        state.screen !== 'game' ||
+        state.gamePhase !== 'review' ||
+        state.completedShots < 1 ||
+        state.completedShots >= state.maxShots ||
+        state.retireConfirmationOpen
+      ) {
+        return
+      }
+
+      set({ gamePhase: 'ready' })
+    },
+
+    viewResult: () => {
+      const state = get()
+      if (
+        state.screen !== 'game' ||
+        state.gamePhase !== 'review' ||
+        state.completedShots !== state.maxShots ||
+        state.result === null
+      ) {
         return
       }
 
       set({
         screen: 'result',
         gamePhase: null,
-        completedShots: 5,
-        result,
+        displayedPower: null,
+        powerDirection: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
+      })
+    },
+
+    openRetireConfirmation: () => {
+      const state = get()
+      if (
+        state.screen !== 'game' ||
+        state.gamePhase === null ||
+        state.completedShots >= state.maxShots ||
+        state.result !== null ||
+        state.retireConfirmationOpen
+      ) {
+        return
+      }
+
+      const resumePhaseAfterRetire =
+        state.gamePhase === 'charging' ? 'ready' : state.gamePhase
+      set({
+        gamePhase: resumePhaseAfterRetire,
+        displayedPower: null,
+        powerDirection: null,
+        retireConfirmationOpen: true,
+        resumePhaseAfterRetire,
+      })
+    },
+
+    closeRetireConfirmation: () => {
+      const state = get()
+      if (!state.retireConfirmationOpen) {
+        return
+      }
+
+      set({
+        gamePhase: state.resumePhaseAfterRetire,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
+      })
+    },
+
+    confirmRetire: () => {
+      if (!get().retireConfirmationOpen) {
+        return
+      }
+
+      set({
+        screen: 'top',
+        gamePhase: null,
+        completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
+        result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
+      })
+    },
+
+    handlePageHidden: () => {
+      const state = get()
+      if (state.screen !== 'game' || state.gamePhase !== 'charging') {
+        return
+      }
+
+      set({
+        gamePhase: 'ready',
+        displayedPower: null,
+        powerDirection: null,
       })
     },
 
@@ -151,7 +364,12 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
         screen: 'game',
         gamePhase: 'ready',
         completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
         result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
       })
     },
 
@@ -166,12 +384,27 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
         throwDistance: null,
         gamePhase: null,
         completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
         result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
       })
     },
 
     returnToTop: () => {
-      set({ screen: 'top', gamePhase: null })
+      set({
+        screen: 'top',
+        gamePhase: null,
+        completedShots: 0,
+        displayedPower: null,
+        powerDirection: null,
+        settledStones: [],
+        result: null,
+        retireConfirmationOpen: false,
+        resumePhaseAfterRetire: null,
+      })
     },
 
     setSoundEnabled: (soundEnabled) => {
