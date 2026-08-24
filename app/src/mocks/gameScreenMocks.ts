@@ -57,6 +57,12 @@ export const maximumScoreResult: GameResult = {
   highScoreRank: 2,
 }
 
+export const thirdPlaceResult: GameResult = {
+  ...firstPlaceResult,
+  totalScore: 190,
+  highScoreRank: 3,
+}
+
 export const mockHighScores: HighScores = {
   ICE: {
     SHORT: [

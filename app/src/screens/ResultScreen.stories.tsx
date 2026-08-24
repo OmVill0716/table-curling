@@ -4,6 +4,7 @@ import {
   firstPlaceResult,
   maximumScoreResult,
   outsideRankingResult,
+  thirdPlaceResult,
 } from '../mocks/gameScreenMocks'
 import { ResultScreen } from './ResultScreen'
 
@@ -38,6 +39,14 @@ export const SecondPlaceMaximumScore: Story = {
     result: maximumScoreResult,
     surface: 'WOOD',
     throwDistance: 'SHORT',
+  },
+}
+
+export const ThirdPlace: Story = {
+  args: {
+    result: thirdPlaceResult,
+    surface: 'ICE',
+    throwDistance: 'MEDIUM',
   },
 }
 
