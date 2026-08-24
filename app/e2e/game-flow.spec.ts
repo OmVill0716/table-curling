@@ -126,6 +126,17 @@ test('Space長押しで上昇中と下降中のPowerを投射できる', async (
   await expect(page.getByText(/現在のPower \d+、下降中/)).toBeVisible()
   await page.keyboard.up('Space')
   await expect(page.getByText('ストーン移動中')).toBeVisible()
+
+  await expect(page.getByRole('button', { name: '次の投射へ' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await page.getByRole('button', { name: '次の投射へ' }).click()
+  await page.getByRole('button', { name: 'ストーンを投射' }).focus()
+  await page.keyboard.down('Space')
+  await page.waitForTimeout(3100)
+  await expect(page.getByText(/現在のPower \d+、上昇中/)).toBeVisible()
+  await page.keyboard.up('Space')
+  await expect(page.getByText('ストーン移動中')).toBeVisible()
 })
 
 test('moving中のリタイア確認時間をPhysicsへ加算しない', async ({ page }) => {
