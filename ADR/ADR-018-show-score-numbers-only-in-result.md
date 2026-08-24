@@ -19,7 +19,7 @@
 - 5投目の停止時に最終得点を一度だけ確定するが、同投目の`review`では数値を表示しない
 - 「結果を見る」の押下後、Resultで初めて各ストーンの得点と合計得点を数値表示する
 - プレイ中の色はRendererが導出し、Zustandへ毎フレーム保存しない
-- リング半径と色の対応は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- リング半径と色の対応は[`game-rules.md`](../docs/specifications/game-rules.md)を正本とする
 
 ## 影響
 

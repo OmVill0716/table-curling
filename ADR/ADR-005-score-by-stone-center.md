@@ -17,7 +17,7 @@
 - 正式な得点は5投目に関係する全ストーンの運動終了後に確定する
 - プレイ中は同じ採点関数から暫定得点を求め、その得点リングと共通の色でストーンを描画する
 - プレイ中の暫定得点と色はRendererが現在位置から導出し、Zustandへ毎フレーム保存しない
-- リング半径と色の対応は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- リング半径と色の対応は[`game-rules.md`](../docs/specifications/game-rules.md)を正本とする
 
 ## 影響
 

@@ -14,7 +14,7 @@ Canvasの外に円形の投射ボタンを配置する。タッチとマウス�
 
 カーリング方式として、投射方向は各投射位置からターゲット中心へ向かう方向に固定する。MVPではプレイヤーによる角度変更を提供しない。
 
-Powerは0から100まで単調増加させ、100で停止して往復させない。充電時間、初速度の範囲、キャンセル動作は[`game-specification.md`](../docs/game-specification.md)を正本とする。
+Powerは0から100まで単調増加させ、100で停止して往復させない。充電時間とキャンセル動作は[`screen-flow-and-input.md`](../docs/specifications/screen-flow-and-input.md)、初速度の範囲は[`physics.md`](../docs/specifications/physics.md)を正本とする。
 
 ボタンはHTMLの`button`要素を基礎とするMUIコンポーネントで実装し、Space/Enterでも同じ操作ができるようにする。
 

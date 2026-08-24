@@ -19,7 +19,7 @@ Powerが0から100まで増加して100で停止する方式では、弱い投�
 - ボタンを離した瞬間のPowerで投射する
 - 投射方向は各投射位置からターゲット中心への固定方向を維持する
 - `pointercancel`やフォーカス喪失時は投射せず、Power表示を未操作状態へ戻す
-- Powerの範囲と周期は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- Powerの範囲と周期は[`screen-flow-and-input.md`](../docs/specifications/screen-flow-and-input.md)を正本とする
 
 ## 影響
 

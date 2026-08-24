@@ -18,7 +18,7 @@ ADR-001ではCanvasの論理座標を`600 × 1000`とした。一方、最低Pow
 - RendererはWorld座標を表示座標へ変換するCameraを持つ
 - 通常時は基本盤面を表示し、投射位置の後退時はターゲットの得点範囲と投射ストーンが同時に見えるようCameraの位置と表示倍率を調整する
 - Physics、衝突、盤外判定、採点はWorld座標だけを使い、Cameraの値に依存させない
-- 具体的な投射位置探索、Camera framing、盤外条件は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- 具体的な投射位置探索とCamera framingは[`coordinates-and-rendering.md`](../docs/specifications/coordinates-and-rendering.md)、盤外条件は[`physics.md`](../docs/specifications/physics.md)を正本とする
 
 ## 影響
 

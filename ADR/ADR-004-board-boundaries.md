@@ -12,7 +12,7 @@ Issueでは左右だけ反射する方式と、盤面全体を反射させる方
 
 - 左右の壁では反射する
 - ターゲット奥側または投射側からストーン全体が出た場合は盤外とし、0点にする
-- 盤面、反発係数、盤外条件の具体値は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- 盤面の具体値は[`coordinates-and-rendering.md`](../docs/specifications/coordinates-and-rendering.md)、反発係数と盤外条件は[`physics.md`](../docs/specifications/physics.md)を正本とする
 
 ## 影響
 

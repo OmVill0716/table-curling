@@ -13,7 +13,7 @@ ADR-004では左右に反射壁を設けることにしていた。しかし、M
 - 盤面の四辺に反射壁を設けない
 - 左右、ターゲット奥側、投射側のいずれかからストーン全体が出た時点で盤外とする
 - 盤外ストーンは0点とする
-- 具体的な盤外条件は[`game-specification.md`](../docs/game-specification.md)を正本とする
+- 具体的な盤外条件は[`physics.md`](../docs/specifications/physics.md)を正本とする
 
 ## 影響
 
