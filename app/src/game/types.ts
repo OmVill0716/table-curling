@@ -30,3 +30,20 @@ export interface PhysicsSnapshot {
   readonly stepCount: number
   readonly isComplete: boolean
 }
+
+export type StoneScore = 0 | 10 | 30 | 50 | 100
+
+export interface StoneResult {
+  readonly id: StoneId
+  readonly position: Vector2
+  readonly inPlay: boolean
+  readonly score: StoneScore
+}
+
+export type HighScoreRank = 1 | 2 | 3
+
+export interface GameResult {
+  readonly stones: readonly StoneResult[]
+  readonly totalScore: number
+  readonly highScoreRank: HighScoreRank | null
+}

@@ -5,8 +5,8 @@
 ## 1. 状態モデル
 
 ```ts
-type SurfaceType = "ice" | "wood" | "felt";
-type ShotDistance = "short" | "medium" | "long";
+type Surface = "ICE" | "WOOD" | "FELT";
+type ThrowDistance = "SHORT" | "MEDIUM" | "LONG";
 type Screen =
   | "top"
   | "fieldSelect"
@@ -37,8 +37,8 @@ type HighScoreRecord = {
 
 type GameStore = {
   screen: Screen;
-  surface: SurfaceType | null;
-  shotDistance: ShotDistance | null;
+  surface: Surface | null;
+  throwDistance: ThrowDistance | null;
   gamePhase: GamePhase | null;
   completedShots: number;
   maxShots: number;
@@ -49,7 +49,7 @@ type GameStore = {
     stones: StoneResult[];
     totalScore: number;
   } | null;
-  highScores: Record<SurfaceType, Record<ShotDistance, HighScoreRecord[]>>;
+  highScores: Record<Surface, Record<ThrowDistance, HighScoreRecord[]>>;
 };
 ```
 
