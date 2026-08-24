@@ -122,13 +122,39 @@ describe('Matter Adapter', () => {
     expect(target?.speed).toBeGreaterThan(1)
   })
 
+  it('衝突開始をStone IDと相対速度付きで一度だけ通知する', () => {
+    const collisionTuning: PhysicsTuning = {
+      ...tuning,
+      frictionAir: { ICE: 0, WOOD: 0, FELT: 0 },
+    }
+    const adapter = createMatterAdapter({
+      surface: 'WOOD',
+      tuning: collisionTuning,
+    })
+    adapter.addStone('target', { x: 300, y: 300 })
+    adapter.addStone('striker', { x: 300, y: 380 })
+    adapter.setStoneVelocity('striker', { x: 0, y: -12 })
+    const collisions = []
+
+    for (let step = 0; step < 30; step += 1) {
+      collisions.push(...adapter.update(PHYSICS_STEP_MS).collisions)
+    }
+
+    expect(collisions).toHaveLength(1)
+    expect(collisions[0].stoneIds).toEqual(['target', 'striker'])
+    expect(collisions[0].relativeSpeed).toBeGreaterThan(0)
+  })
+
   it('盤外StoneをWorldから除外してsnapshotへ残す', () => {
     const adapter = createMatterAdapter({ surface: 'WOOD', tuning })
     adapter.addStone('stone-1', { x: 0, y: 200 })
     adapter.setStoneVelocity('stone-1', { x: -12, y: 0 })
 
+    const outOfBoundsStoneIds: string[] = []
     for (let step = 0; step < 10; step += 1) {
-      adapter.update(PHYSICS_STEP_MS)
+      outOfBoundsStoneIds.push(
+        ...adapter.update(PHYSICS_STEP_MS).outOfBoundsStoneIds,
+      )
       if (adapter.getStoneSnapshots()[0].motionState === 'outOfBounds') {
         break
       }
@@ -137,6 +163,8 @@ describe('Matter Adapter', () => {
     expect(adapter.getStoneSnapshots()[0].motionState).toBe('outOfBounds')
     expect(adapter.getStoneDiagnostics('stone-1').isInWorld).toBe(false)
     expect(adapter.areAllStonesComplete()).toBe(true)
+    expect(outOfBoundsStoneIds).toEqual(['stone-1'])
+    expect(adapter.update(PHYSICS_STEP_MS).outOfBoundsStoneIds).toEqual([])
   })
 
   it('dispose後はBodyとEngineを再利用しない', () => {

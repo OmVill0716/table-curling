@@ -1,4 +1,5 @@
-import { Body, Composite, Engine } from 'matter-js'
+import { Body, Composite, Engine, Events } from 'matter-js'
+import type { IEventCollision } from 'matter-js'
 import type { PhysicsTuning } from '../../config/physics'
 import { STONE_RADIUS, getPhysicsTuningErrors } from '../../config/physics'
 import type {
@@ -22,6 +23,16 @@ export interface MatterAdapterOptions {
   readonly tuning: PhysicsTuning
 }
 
+export interface StoneCollisionCandidate {
+  readonly stoneIds: readonly [StoneId, StoneId]
+  readonly relativeSpeed: number
+}
+
+export interface MatterStepEvents {
+  readonly collisions: readonly StoneCollisionCandidate[]
+  readonly outOfBoundsStoneIds: readonly StoneId[]
+}
+
 export interface StoneDiagnostics {
   readonly density: number
   readonly friction: number
@@ -35,7 +46,7 @@ export interface StoneDiagnostics {
 export interface MatterAdapter {
   addStone(id: StoneId, position: Vector2): void
   setStoneVelocity(id: StoneId, velocity: Vector2): void
-  update(deltaMs: number): void
+  update(deltaMs: number): MatterStepEvents
   getStoneSnapshots(): readonly StoneSnapshot[]
   getStoneDiagnostics(id: StoneId): StoneDiagnostics
   areAllStonesComplete(): boolean
@@ -65,6 +76,8 @@ export function createMatterAdapter({
 
   const engine = createMatterEngine()
   const stones = new Map<StoneId, StoneRecord>()
+  const stoneIdsByBodyId = new Map<number, StoneId>()
+  let pendingCollisions: StoneCollisionCandidate[] = []
   let disposed = false
 
   const assertActive = () => {
@@ -90,17 +103,17 @@ export function createMatterAdapter({
       stone.motionState = 'outOfBounds'
       stone.belowStopSpeedMs = 0
       Composite.remove(engine.world, body)
-      return
+      return true
     }
 
     if (body.speed >= tuning.stopSpeed) {
       stone.motionState = 'moving'
       stone.belowStopSpeedMs = 0
-      return
+      return false
     }
 
     if (body.speed === 0 && stone.motionState === 'stopped') {
-      return
+      return false
     }
 
     stone.motionState = 'moving'
@@ -112,7 +125,29 @@ export function createMatterAdapter({
       stone.motionState = 'stopped'
       stone.belowStopSpeedMs = 0
     }
+
+    return false
   }
+
+  const handleCollisionStart = (event: IEventCollision<typeof engine>) => {
+    for (const { bodyA, bodyB } of event.pairs) {
+      const stoneA = stoneIdsByBodyId.get(bodyA.id)
+      const stoneB = stoneIdsByBodyId.get(bodyB.id)
+      if (stoneA === undefined || stoneB === undefined) {
+        continue
+      }
+
+      pendingCollisions.push({
+        stoneIds: [stoneA, stoneB],
+        relativeSpeed: Math.hypot(
+          bodyA.velocity.x - bodyB.velocity.x,
+          bodyA.velocity.y - bodyB.velocity.y,
+        ),
+      })
+    }
+  }
+
+  Events.on(engine, 'collisionStart', handleCollisionStart)
 
   return {
     addStone(id, position) {
@@ -129,6 +164,7 @@ export function createMatterAdapter({
         motionState: 'stopped',
         belowStopSpeedMs: 0,
       })
+      stoneIdsByBodyId.set(body.id, id)
       Composite.add(engine.world, body)
     },
 
@@ -155,11 +191,19 @@ export function createMatterAdapter({
 
       Engine.update(engine, deltaMs)
 
-      for (const stone of stones.values()) {
+      const collisions = pendingCollisions
+      pendingCollisions = []
+      const outOfBoundsStoneIds: StoneId[] = []
+
+      for (const [id, stone] of stones) {
         if (stone.motionState !== 'outOfBounds') {
-          updateMotionState(stone, deltaMs)
+          if (updateMotionState(stone, deltaMs)) {
+            outOfBoundsStoneIds.push(id)
+          }
         }
       }
+
+      return { collisions, outOfBoundsStoneIds }
     },
 
     getStoneSnapshots() {
@@ -208,8 +252,11 @@ export function createMatterAdapter({
       }
 
       Composite.clear(engine.world, false, true)
+      Events.off(engine, 'collisionStart', handleCollisionStart)
       Engine.clear(engine)
       stones.clear()
+      stoneIdsByBodyId.clear()
+      pendingCollisions = []
       disposed = true
     },
 

@@ -31,6 +31,21 @@ export interface PhysicsSnapshot {
   readonly isComplete: boolean
 }
 
+export interface StoneCollisionEvent {
+  readonly type: 'stoneCollision'
+  readonly stepCount: number
+  readonly stoneIds: readonly [StoneId, StoneId]
+  readonly relativeSpeed: number
+}
+
+export interface StoneOutOfBoundsEvent {
+  readonly type: 'outOfBounds'
+  readonly stepCount: number
+  readonly stoneId: StoneId
+}
+
+export type PhysicsGameEvent = StoneCollisionEvent | StoneOutOfBoundsEvent
+
 export type StoneScore = 0 | 10 | 30 | 50 | 100
 
 export type PowerDirection = 'increasing' | 'decreasing'
