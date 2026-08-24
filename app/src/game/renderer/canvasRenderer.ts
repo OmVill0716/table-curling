@@ -15,12 +15,7 @@ import type {
 import type { Camera } from './camera'
 import { getCameraScale, worldToViewport } from './camera'
 import type { CanvasViewport } from './canvasSizing'
-
-const SURFACE_COLORS: Readonly<Record<Surface, string>> = {
-  ICE: '#DDF5FF',
-  WOOD: '#B98252',
-  FELT: '#287A4B',
-}
+import { drawSurfaceBackground } from './surfacePatterns'
 
 const TARGET_RINGS: readonly {
   readonly radius: number
@@ -98,8 +93,7 @@ function prepareContext(
     0,
     0,
   )
-  context.fillStyle = SURFACE_COLORS[surface]
-  context.fillRect(0, 0, viewport.cssWidth, viewport.cssHeight)
+  drawSurfaceBackground(context, surface, viewport)
 
   return context
 }
