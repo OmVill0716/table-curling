@@ -41,7 +41,7 @@ function assertNever(screen: never): never {
   throw new Error(`Unknown screen: ${String(screen)}`)
 }
 
-function AppContent() {
+export function AppContent() {
   const screen = useGameStore((store) => store.screen)
   const surface = useGameStore((store) => store.surface)
   const throwDistance = useGameStore((store) => store.throwDistance)
