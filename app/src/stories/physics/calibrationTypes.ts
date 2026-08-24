@@ -1,4 +1,4 @@
-import type { PhysicsTuning } from '../../config/physics'
+import { PHYSICS_TUNING, type PhysicsTuning } from '../../config/physics'
 import type { Surface, ThrowDistance } from '../../game/types'
 
 export const CALIBRATION_PRESETS = [
@@ -28,19 +28,19 @@ export interface PhysicsCalibrationArgs {
   readonly stopDurationMs: number
 }
 
-export const CALIBRATION_CANDIDATE_ARGS: PhysicsCalibrationArgs = {
+export const PHYSICS_CALIBRATION_ARGS: PhysicsCalibrationArgs = {
   preset: 'InteractiveCalibration',
   surface: 'FELT',
   distance: 'MEDIUM',
   power: 50,
-  minSpeed: 2,
-  maxSpeed: 14,
-  iceFrictionAir: 0.004,
-  woodFrictionAir: 0.008,
-  feltFrictionAir: 0.015,
-  restitution: 0.85,
-  stopSpeed: 1,
-  stopDurationMs: 250,
+  minSpeed: PHYSICS_TUNING.minSpeed,
+  maxSpeed: PHYSICS_TUNING.maxSpeed,
+  iceFrictionAir: PHYSICS_TUNING.frictionAir.ICE,
+  woodFrictionAir: PHYSICS_TUNING.frictionAir.WOOD,
+  feltFrictionAir: PHYSICS_TUNING.frictionAir.FELT,
+  restitution: PHYSICS_TUNING.restitution,
+  stopSpeed: PHYSICS_TUNING.stopSpeed,
+  stopDurationMs: PHYSICS_TUNING.stopDurationMs,
 }
 
 export function argsToPhysicsTuning(

@@ -3,14 +3,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { PhysicsCalibrationHarness } from './PhysicsCalibrationHarness'
 import {
-  CALIBRATION_CANDIDATE_ARGS,
+  PHYSICS_CALIBRATION_ARGS,
   type PhysicsCalibrationArgs,
 } from './calibrationTypes'
 
 const meta = {
   title: 'Physics/Calibration',
   component: PhysicsCalibrationHarness,
-  args: CALIBRATION_CANDIDATE_ARGS,
+  args: PHYSICS_CALIBRATION_ARGS,
   argTypes: {
     preset: {
       control: 'select',
@@ -62,7 +62,7 @@ export const MinimumPowerFelt: Story = {
     const story = within(canvasElement)
     const board = story.getByLabelText('物理調整盤面') as HTMLCanvasElement
 
-    await expect(story.getByText('未承認候補')).toBeVisible()
+    await expect(story.getByText('承認済み設定')).toBeVisible()
     await expect(board).toBeVisible()
     expect(board.width).toBeGreaterThan(0)
     expect(board.height).toBeGreaterThan(0)

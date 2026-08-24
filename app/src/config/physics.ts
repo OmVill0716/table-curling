@@ -1,4 +1,5 @@
 import type { Surface, ThrowDistance, Vector2 } from '../game/types'
+import { SURFACE_FRICTION_AIR } from './surfaces'
 
 export const WORLD_WIDTH = 600
 export const WORLD_HEIGHT = 1500
@@ -25,10 +26,6 @@ export const PHYSICS_STEP_MS = 1000 / 120
 export const MAX_FRAME_DELTA_MS = 100
 export const MAX_PHYSICS_STEPS_PER_FRAME = 12
 
-export const INITIAL_RESTITUTION = 0.85
-export const INITIAL_STOP_SPEED = 1
-export const INITIAL_STOP_DURATION_MS = 250
-
 export interface PhysicsTuning {
   readonly minSpeed: number
   readonly maxSpeed: number
@@ -37,6 +34,21 @@ export interface PhysicsTuning {
   readonly stopSpeed: number
   readonly stopDurationMs: number
 }
+
+export const PHYSICS_MIN_SPEED = 2
+export const PHYSICS_MAX_SPEED = 14
+export const PHYSICS_RESTITUTION = 0.85
+export const PHYSICS_STOP_SPEED = 1
+export const PHYSICS_STOP_DURATION_MS = 250
+
+export const PHYSICS_TUNING: PhysicsTuning = Object.freeze({
+  minSpeed: PHYSICS_MIN_SPEED,
+  maxSpeed: PHYSICS_MAX_SPEED,
+  frictionAir: SURFACE_FRICTION_AIR,
+  restitution: PHYSICS_RESTITUTION,
+  stopSpeed: PHYSICS_STOP_SPEED,
+  stopDurationMs: PHYSICS_STOP_DURATION_MS,
+})
 
 export function getPhysicsTuningErrors(tuning: PhysicsTuning): readonly string[] {
   const errors: string[] = []

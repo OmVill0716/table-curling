@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  INITIAL_RESTITUTION,
-  INITIAL_STOP_DURATION_MS,
-  INITIAL_STOP_SPEED,
+  PHYSICS_TUNING,
   TARGET_CENTER,
   getPhysicsTuningErrors,
 } from '../../config/physics'
@@ -143,17 +141,8 @@ describe('盤外判定', () => {
 })
 
 describe('Physics調整値の検証', () => {
-  it('仕様上の初期値を含む有効な設定を受け付ける', () => {
-    expect(
-      getPhysicsTuningErrors({
-        minSpeed: 2,
-        maxSpeed: 12,
-        frictionAir: { ICE: 0.005, WOOD: 0.01, FELT: 0.015 },
-        restitution: INITIAL_RESTITUTION,
-        stopSpeed: INITIAL_STOP_SPEED,
-        stopDurationMs: INITIAL_STOP_DURATION_MS,
-      }),
-    ).toEqual([])
+  it('承認済み設定を有効な値として受け付ける', () => {
+    expect(getPhysicsTuningErrors(PHYSICS_TUNING)).toEqual([])
   })
 
   it('不正な範囲を暗黙補正せず列挙する', () => {

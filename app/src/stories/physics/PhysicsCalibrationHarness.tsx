@@ -205,7 +205,7 @@ export function PhysicsCalibrationHarness(args: PhysicsCalibrationArgs) {
     () =>
       JSON.stringify(
         {
-          status: 'UNAPPROVED_CALIBRATION_CANDIDATE',
+          status: 'ACCEPTED_PHYSICS_TUNING',
           power,
           surface,
           distance,
@@ -459,7 +459,7 @@ export function PhysicsCalibrationHarness(args: PhysicsCalibrationArgs) {
             direction="row"
             sx={{ flexWrap: 'wrap', gap: 1, mt: 1 }}
           >
-            <Chip color="warning" label="未承認候補" size="small" />
+            <Chip color="success" label="承認済み設定" size="small" />
             <Chip label={`${surface} / ${distance}`} size="small" />
             <Chip label={`Power ${power}`} size="small" />
           </Stack>

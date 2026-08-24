@@ -1,10 +1,8 @@
 import { Body, Composite } from 'matter-js'
 import { describe, expect, it } from 'vitest'
 import {
-  INITIAL_RESTITUTION,
-  INITIAL_STOP_DURATION_MS,
-  INITIAL_STOP_SPEED,
   PHYSICS_STEP_MS,
+  PHYSICS_TUNING,
   STONE_RADIUS,
   type PhysicsTuning,
 } from '../../config/physics'
@@ -14,14 +12,7 @@ import {
 } from '../../game/physics/createBodies'
 import { createMatterAdapter } from '../../game/physics/matterAdapter'
 
-const tuning: PhysicsTuning = {
-  minSpeed: 2,
-  maxSpeed: 12,
-  frictionAir: { ICE: 0.005, WOOD: 0.01, FELT: 0.015 },
-  restitution: INITIAL_RESTITUTION,
-  stopSpeed: INITIAL_STOP_SPEED,
-  stopDurationMs: INITIAL_STOP_DURATION_MS,
-}
+const tuning = PHYSICS_TUNING
 
 describe('Matter EngineとStone Bodyの生成', () => {
   it('重力とSleepingを無効にし、solver既定値を維持する', () => {

@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { PHYSICS_STEP_MS, TARGET_CENTER } from '../../config/physics'
+import {
+  PHYSICS_STEP_MS,
+  PHYSICS_TUNING,
+  TARGET_CENTER,
+} from '../../config/physics'
 import { createPhysicsRuntime } from '../../game/runtime/physicsRuntime'
 import type { PhysicsSnapshot, StoneId, Vector2 } from '../../game/types'
 import {
-  CALIBRATION_CANDIDATE_ARGS,
+  PHYSICS_CALIBRATION_ARGS,
   argsToPhysicsTuning,
   type PhysicsCalibrationArgs,
 } from '../../stories/physics/calibrationTypes'
@@ -113,15 +117,21 @@ function simulate(
   }
 }
 
-function candidateArgs(
+function calibrationArgs(
   overrides: Partial<PhysicsCalibrationArgs>,
 ): PhysicsCalibrationArgs {
-  return { ...CALIBRATION_CANDIDATE_ARGS, ...overrides }
+  return { ...PHYSICS_CALIBRATION_ARGS, ...overrides }
 }
 
-describe('Storybook未承認Calibration候補', () => {
+describe('承認済みPhysics設定', () => {
+  it('production設定とStorybook初期設定が一致する', () => {
+    expect(argsToPhysicsTuning(PHYSICS_CALIBRATION_ARGS)).toEqual(
+      PHYSICS_TUNING,
+    )
+  })
+
   it('FELTのPower 1が40 logical px以上進む', () => {
-    const args = candidateArgs({
+    const args = calibrationArgs({
       preset: 'MinimumPowerFelt',
       surface: 'FELT',
       distance: 'SHORT',
@@ -133,11 +143,13 @@ describe('Storybook未承認Calibration候補', () => {
     )
 
     expect(observation.launchTravelDistance).toBeGreaterThanOrEqual(40)
+    expect(observation.launchTravelDistance).toBeCloseTo(79.5140948965, 6)
+    expect(observation.snapshot.stepCount).toBe(122)
     expect(observation.snapshot.stones[0].motionState).toBe('stopped')
   })
 
   it('FELT・LONG最大後退のPower 100がターゲット中心120以内へ入る', () => {
-    const args = candidateArgs({
+    const args = calibrationArgs({
       preset: 'MaximumPowerFeltLong',
       surface: 'FELT',
       distance: 'LONG',
@@ -149,12 +161,14 @@ describe('Storybook未承認Calibration候補', () => {
     expect(scene.launchPosition).toEqual({ x: 300, y: 1084 })
     expect(scene.backtrackSteps).toBe(4)
     expect(observation.minimumTargetDistance).toBeLessThanOrEqual(120)
+    expect(observation.minimumTargetDistance).toBeCloseTo(0.2259576278, 6)
+    expect(observation.snapshot.stepCount).toBe(380)
     expect(observation.snapshot.stones[0].motionState).toBe('stopped')
   })
 
   it('同じPowerでICE、WOOD、FELTの初速度が等しく移動距離に差が出る', () => {
     const observations = (['ICE', 'WOOD', 'FELT'] as const).map((surface) => {
-      const args = candidateArgs({
+      const args = calibrationArgs({
         preset: 'InteractiveCalibration',
         surface,
         distance: 'SHORT',
@@ -169,6 +183,13 @@ describe('Storybook未承認Calibration候補', () => {
     expect(observations.map(({ launchSpeed }) => launchSpeed)).toEqual([
       2, 2, 2,
     ])
+    expect(
+      observations.map(({ launchTravelDistance }) => launchTravelDistance),
+    ).toEqual([
+      expect.closeTo(263.9371108896, 6),
+      expect.closeTo(138.1882767566, 6),
+      expect.closeTo(79.5140948965, 6),
+    ])
     expect(observations[0].launchTravelDistance).toBeGreaterThan(
       observations[1].launchTravelDistance,
     )
@@ -178,7 +199,7 @@ describe('Storybook未承認Calibration候補', () => {
   })
 
   it('最大Powerの正面衝突で速度を伝え、Stoneの順序がすり抜けない', () => {
-    const args = candidateArgs({
+    const args = calibrationArgs({
       preset: 'HeadOnCollision',
       surface: 'WOOD',
       distance: 'LONG',
@@ -189,8 +210,12 @@ describe('Storybook未承認Calibration候補', () => {
       createCalibrationScene(args.preset, args.distance),
     )
 
-    expect(observation.maximumSpeeds.get('target')).toBeGreaterThan(1)
+    expect(observation.maximumSpeeds.get('target')).toBeCloseTo(
+      7.425493841,
+      6,
+    )
     expect(observation.stoneOrderReversed).toBe(false)
+    expect(observation.snapshot.stepCount).toBe(287)
   })
 
   it('LaunchPositionFallbackが候補4を選ぶ', () => {
@@ -201,7 +226,7 @@ describe('Storybook未承認Calibration候補', () => {
   })
 
   it('OutOfBoundsで四辺のStoneをすべて盤外へ移す', () => {
-    const args = candidateArgs({
+    const args = calibrationArgs({
       preset: 'OutOfBounds',
       surface: 'ICE',
       power: 100,
