@@ -5,6 +5,7 @@ import {
   type PhysicsTuning,
 } from '../../config/physics'
 import type {
+  PowerReading,
   PhysicsSnapshot,
   StoneId,
   Surface,
@@ -19,6 +20,7 @@ import {
   createFixedTimestep,
   type FixedTimestepAdvanceResult,
 } from './fixedTimestep'
+import { getPowerReadingAtElapsedMs } from './powerGauge'
 
 export interface PhysicsRuntimeOptions {
   readonly surface: Surface
@@ -34,6 +36,11 @@ export interface PhysicsRuntimeDiagnostics {
 
 export interface PhysicsRuntime {
   addStone(id: StoneId, position: Vector2): void
+  startCharging(): PowerReading
+  advanceCharging(deltaMs: number): PowerReading
+  releaseCharging(): number
+  cancelCharging(): void
+  getPowerReading(): PowerReading | null
   launchStone(id: StoneId, power: number): Vector2
   advanceFrame(frameDeltaMs: number): FixedTimestepAdvanceResult
   resetAccumulator(): void
@@ -80,6 +87,7 @@ export function createPhysicsRuntime({
   let disposed = false
   let totalDroppedDeltaMs = 0
   let lastAdvance: FixedTimestepAdvanceResult | null = null
+  let chargingElapsedMs: number | null = null
 
   const assertActive = () => {
     if (disposed) {
@@ -102,6 +110,62 @@ export function createPhysicsRuntime({
     addStone(id, position) {
       assertActive()
       adapter.addStone(id, position)
+    },
+
+    startCharging() {
+      assertActive()
+
+      if (
+        chargingElapsedMs !== null ||
+        completionPending ||
+        !adapter.areAllStonesComplete()
+      ) {
+        throw new Error('Cannot start charging in the current state')
+      }
+
+      chargingElapsedMs = 0
+      return getPowerReadingAtElapsedMs(chargingElapsedMs)
+    },
+
+    advanceCharging(deltaMs) {
+      assertActive()
+
+      if (chargingElapsedMs === null) {
+        throw new Error('Cannot advance charging before it starts')
+      }
+      if (!Number.isFinite(deltaMs) || deltaMs < 0) {
+        throw new RangeError(
+          'deltaMs must be a finite number greater than or equal to 0',
+        )
+      }
+
+      chargingElapsedMs += deltaMs
+      return getPowerReadingAtElapsedMs(chargingElapsedMs)
+    },
+
+    releaseCharging() {
+      assertActive()
+
+      if (chargingElapsedMs === null) {
+        throw new Error('Cannot release charging before it starts')
+      }
+
+      const { value } = getPowerReadingAtElapsedMs(chargingElapsedMs)
+      chargingElapsedMs = null
+      return value
+    },
+
+    cancelCharging() {
+      assertActive()
+      chargingElapsedMs = null
+    },
+
+    getPowerReading() {
+      assertActive()
+
+      return chargingElapsedMs === null
+        ? null
+        : getPowerReadingAtElapsedMs(chargingElapsedMs)
     },
 
     launchStone(id, power) {
@@ -177,6 +241,7 @@ export function createPhysicsRuntime({
       }
 
       fixedTimestep.reset()
+      chargingElapsedMs = null
       adapter.dispose()
       disposed = true
     },
