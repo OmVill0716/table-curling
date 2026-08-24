@@ -1,23 +1,10 @@
-import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import { Box, CssBaseline, ThemeProvider } from '@mui/material'
 import { DevelopmentStatus } from './components/DevelopmentStatus'
-
-const theme = createTheme({
-  palette: {
-    background: {
-      default: '#e7f4ff',
-    },
-    primary: {
-      main: '#145da0',
-    },
-  },
-  typography: {
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
-  },
-})
+import { appTheme } from './theme'
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <Box
         sx={{
