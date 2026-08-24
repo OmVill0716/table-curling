@@ -25,6 +25,8 @@ export function CollisionAudioCalibrationHarness({
   volume,
 }: CollisionAudioCalibrationArgs) {
   const adapterRef = useRef<ReturnType<typeof createAudioAdapter> | null>(null)
+  const physicsElapsedMsRef = useRef(0)
+  const sequenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [outcome, setOutcome] = useState('試聴する操作を選んでください。')
 
   useEffect(() => {
@@ -34,8 +36,13 @@ export function CollisionAudioCalibrationHarness({
     })
     adapter.preload()
     adapterRef.current = adapter
+    physicsElapsedMsRef.current = 0
 
     return () => {
+      if (sequenceTimerRef.current !== null) {
+        clearTimeout(sequenceTimerRef.current)
+        sequenceTimerRef.current = null
+      }
       adapter.setEnabled(false)
       if (adapterRef.current === adapter) {
         adapterRef.current = null
@@ -50,19 +57,43 @@ export function CollisionAudioCalibrationHarness({
     return adapter
   }
 
+  const cancelPendingSequence = () => {
+    if (sequenceTimerRef.current !== null) {
+      clearTimeout(sequenceTimerRef.current)
+      sequenceTimerRef.current = null
+    }
+  }
+
+  const reserveNextCollisionTime = () => {
+    physicsElapsedMsRef.current += Math.max(cooldownMs, 1)
+    return physicsElapsedMsRef.current
+  }
+
   const playSingle = () => {
-    const played = getUnlockedAdapter()?.playCollision(
+    cancelPendingSequence()
+    const adapter = getUnlockedAdapter()
+    if (adapter === undefined || adapter === null) {
+      setOutcome('Audio Adapterを準備できませんでした。')
+      return
+    }
+
+    const played = adapter.playCollision(
       [collision(Math.max(minRelativeSpeed + 4, 5), 120)],
-      1000,
+      reserveNextCollisionTime(),
     )
-    setOutcome(played ? '単発衝突を再生しました。' : '音源は未準備です。')
+    setOutcome(
+      played
+        ? '単発衝突を再生しました。'
+        : '音源を再生できませんでした。読み込み完了後にもう一度お試しください。',
+    )
   }
 
   const playWeak = () => {
+    cancelPendingSequence()
     const relativeSpeed = Math.max(0, minRelativeSpeed - 0.1)
     const played = getUnlockedAdapter()?.playCollision(
       [collision(relativeSpeed, 240)],
-      2000,
+      reserveNextCollisionTime(),
     )
     setOutcome(
       played
@@ -72,6 +103,7 @@ export function CollisionAudioCalibrationHarness({
   }
 
   const playSameStep = () => {
+    cancelPendingSequence()
     const speeds = [
       minRelativeSpeed + 1,
       minRelativeSpeed + 5,
@@ -79,16 +111,17 @@ export function CollisionAudioCalibrationHarness({
     ]
     const played = getUnlockedAdapter()?.playCollision(
       speeds.map((speed) => collision(speed, 360)),
-      3000,
+      reserveNextCollisionTime(),
     )
     setOutcome(
       played
         ? `同一stepの最大相対速度 ${Math.max(...speeds).toFixed(1)} だけを再生しました。`
-        : '音源は未準備です。',
+        : '音源を再生できませんでした。読み込み完了後にもう一度お試しください。',
     )
   }
 
   const playSequence = () => {
+    cancelPendingSequence()
     const adapter = getUnlockedAdapter()
     if (adapter === undefined || adapter === null) {
       setOutcome('Audio Adapterを準備できませんでした。')
@@ -96,17 +129,35 @@ export function CollisionAudioCalibrationHarness({
     }
 
     const speed = Math.max(minRelativeSpeed + 4, 5)
-    const first = adapter.playCollision([collision(speed, 480)], 4000)
+    const firstAtMs = reserveNextCollisionTime()
+    const first = adapter.playCollision([collision(speed, 480)], firstAtMs)
+    if (!first) {
+      setOutcome(
+        '音源を再生できませんでした。読み込み完了後にもう一度お試しください。',
+      )
+      return
+    }
+
     const withinCooldown = adapter.playCollision(
       [collision(speed, 481)],
-      4000 + Math.max(0, cooldownMs - 1),
+      firstAtMs + Math.max(0, cooldownMs - 1),
     )
-    const atBoundary = adapter.playCollision(
-      [collision(speed, 482)],
-      4000 + cooldownMs,
-    )
-    setOutcome(
-      `連続衝突: 初回 ${first ? '再生' : '無音'} / 直後 ${withinCooldown ? '再生' : '除外'} / 境界 ${atBoundary ? '再生' : '無音'}`,
+    const boundaryAtMs = firstAtMs + cooldownMs
+    physicsElapsedMsRef.current = boundaryAtMs
+    setOutcome('連続衝突を試聴中です。')
+
+    sequenceTimerRef.current = setTimeout(
+      () => {
+        sequenceTimerRef.current = null
+        const atBoundary = adapter.playCollision(
+          [collision(speed, 482)],
+          boundaryAtMs,
+        )
+        setOutcome(
+          `連続衝突: 初回 再生 / 直後 ${withinCooldown ? '再生' : '除外'} / 境界 ${atBoundary ? '再生' : '無音'}`,
+        )
+      },
+      Math.max(cooldownMs, 0),
     )
   }
 
