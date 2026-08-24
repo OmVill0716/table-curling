@@ -47,3 +47,12 @@ export interface GameResult {
   readonly totalScore: number
   readonly highScoreRank: HighScoreRank | null
 }
+
+export interface HighScoreRecord {
+  readonly score: number
+  readonly achievedAt: string
+}
+
+export type HighScores = Readonly<
+  Record<Surface, Readonly<Record<ThrowDistance, readonly HighScoreRecord[]>>>
+>
