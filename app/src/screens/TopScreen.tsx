@@ -64,7 +64,7 @@ export function TopScreen({
             テーブルカーリング
           </Typography>
           <Typography color="text.secondary" sx={{ fontWeight: 700 }}>
-            5投で狙う、テーブルの真剣勝負
+            学校の休憩時間にやったあの遊び
           </Typography>
         </Stack>
 
