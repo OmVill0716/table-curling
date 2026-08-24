@@ -1,22 +1,53 @@
-import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material'
-import { useLayoutEffect, useRef } from 'react'
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material'
+import { useLayoutEffect, useRef, type RefObject } from 'react'
 import { AppShell } from '../components/AppShell'
+import { PowerShotButton } from '../components/PowerShotButton'
 import {
   fitCanvasCssSize,
   getCanvasViewport,
   resizeCanvas,
 } from '../game/renderer/canvasSizing'
-import type { Surface, ThrowDistance } from '../game/types'
+import type { CanvasViewport } from '../game/renderer/canvasSizing'
+import type {
+  PowerDirection,
+  Surface,
+  ThrowDistance,
+} from '../game/types'
 import type { GamePhase } from '../stores/gameStore'
 
 interface GameScreenProps {
+  readonly canvasRef?: RefObject<HTMLCanvasElement | null>
   readonly completedShots: number
+  readonly displayedPower?: number | null
   readonly gamePhase: GamePhase
+  readonly initializationError?: string | null
+  readonly isSessionReady?: boolean
   readonly maxShots: number
+  readonly onCanvasViewportChange?: (viewport: CanvasViewport) => void
+  readonly onChargeCancel?: () => void
+  readonly onChargeRelease?: () => void
+  readonly onChargeStart?: () => void
+  readonly onCloseRetireConfirmation?: () => void
+  readonly onConfirmRetire?: () => void
   readonly surface: Surface
   readonly throwDistance: ThrowDistance
   readonly onNextShot?: () => void
+  readonly onOpenRetireConfirmation?: () => void
   readonly onViewResult?: () => void
+  readonly powerDirection?: PowerDirection | null
+  readonly retireConfirmationOpen?: boolean
 }
 
 const phaseLabels: Readonly<Record<GamePhase, string>> = {
@@ -26,9 +57,15 @@ const phaseLabels: Readonly<Record<GamePhase, string>> = {
   review: '投射完了',
 }
 
-function StaticGameBoard() {
+interface GameBoardProps {
+  readonly canvasRef?: RefObject<HTMLCanvasElement | null>
+  readonly onViewportChange?: (viewport: CanvasViewport) => void
+}
+
+function GameBoard({ canvasRef: externalCanvasRef, onViewportChange }: GameBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const internalCanvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = externalCanvasRef ?? internalCanvasRef
 
   useLayoutEffect(() => {
     const container = containerRef.current
@@ -40,10 +77,13 @@ function StaticGameBoard() {
     const resize = () => {
       const { width, height } = container.getBoundingClientRect()
       const cssSize = fitCanvasCssSize(width, height)
-      resizeCanvas(
-        canvas,
-        getCanvasViewport(cssSize.width, cssSize.height, window.devicePixelRatio),
+      const viewport = getCanvasViewport(
+        cssSize.width,
+        cssSize.height,
+        window.devicePixelRatio,
       )
+      resizeCanvas(canvas, viewport)
+      onViewportChange?.(viewport)
     }
 
     resize()
@@ -51,7 +91,7 @@ function StaticGameBoard() {
     observer.observe(container)
 
     return () => observer.disconnect()
-  }, [])
+  }, [canvasRef, onViewportChange])
 
   return (
     <Box
@@ -74,8 +114,6 @@ function StaticGameBoard() {
         role="img"
         sx={{
           backgroundColor: 'background.paper',
-          backgroundImage:
-            'radial-gradient(circle at 50% 22%, #ef6461 0 6%, #f6c85f 6.5% 12%, #55a6d9 12.5% 18%, #75c8ae 18.5% 24%, transparent 24.5%), linear-gradient(180deg, rgba(255,255,255,0.86), rgba(219,238,245,0.96))',
           border: '3px solid',
           borderColor: 'text.primary',
           borderRadius: 2,
@@ -107,16 +145,34 @@ function StaticGameBoard() {
 }
 
 export function GameScreen({
+  canvasRef,
   completedShots,
+  displayedPower = null,
   gamePhase,
+  initializationError = null,
+  isSessionReady = true,
   maxShots,
+  onCanvasViewportChange,
+  onChargeCancel,
+  onChargeRelease,
+  onChargeStart,
+  onCloseRetireConfirmation,
+  onConfirmRetire,
   onNextShot,
+  onOpenRetireConfirmation,
   onViewResult,
+  powerDirection = null,
+  retireConfirmationOpen = false,
   surface,
   throwDistance,
 }: GameScreenProps) {
-  const currentShot = Math.min(completedShots + 1, maxShots)
+  const currentShot = Math.min(
+    gamePhase === 'review' ? completedShots : completedShots + 1,
+    maxShots,
+  )
   const isFinalReview = gamePhase === 'review' && completedShots === maxShots
+  const canRetire = !isFinalReview && onOpenRetireConfirmation !== undefined
+  const showPowerButton = gamePhase === 'ready' || gamePhase === 'charging'
 
   return (
     <AppShell game maxWidth={1180}>
@@ -171,7 +227,10 @@ export function GameScreen({
             minWidth: 0,
           }}
         >
-          <StaticGameBoard />
+          <GameBoard
+            canvasRef={canvasRef}
+            onViewportChange={onCanvasViewportChange}
+          />
         </Box>
 
         <Paper
@@ -180,6 +239,11 @@ export function GameScreen({
           sx={{ gridArea: 'controls', p: { xs: 1.25, sm: 2 } }}
         >
           <Stack spacing={1.25} sx={{ alignItems: 'stretch' }}>
+            {initializationError ? (
+              <Typography color="error" role="alert" sx={{ fontWeight: 800 }}>
+                {initializationError}
+              </Typography>
+            ) : null}
             {gamePhase === 'ready' ? (
               <Typography sx={{ fontWeight: 800, textAlign: 'center' }}>
                 ストーンを投げる準備ができました
@@ -194,6 +258,24 @@ export function GameScreen({
               <Typography sx={{ fontWeight: 800, textAlign: 'center' }}>
                 全ストーンの停止を待っています
               </Typography>
+            ) : null}
+            {showPowerButton ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <PowerShotButton
+                  direction={powerDirection}
+                  disabled={
+                    !isSessionReady ||
+                    initializationError !== null ||
+                    onChargeStart === undefined ||
+                    onChargeRelease === undefined ||
+                    onChargeCancel === undefined
+                  }
+                  onChargeCancel={onChargeCancel ?? (() => undefined)}
+                  onChargeRelease={onChargeRelease ?? (() => undefined)}
+                  onChargeStart={onChargeStart ?? (() => undefined)}
+                  power={displayedPower}
+                />
+              </Box>
             ) : null}
             {gamePhase === 'review' && !isFinalReview ? (
               <Button
@@ -213,9 +295,39 @@ export function GameScreen({
                 結果を見る
               </Button>
             ) : null}
+            {canRetire ? (
+              <Button
+                color="error"
+                onClick={onOpenRetireConfirmation}
+                variant="outlined"
+              >
+                リタイア
+              </Button>
+            ) : null}
           </Stack>
         </Paper>
       </Box>
+      <Dialog
+        aria-describedby="retire-confirmation-description"
+        aria-labelledby="retire-confirmation-title"
+        onClose={onCloseRetireConfirmation}
+        open={retireConfirmationOpen}
+      >
+        <DialogTitle id="retire-confirmation-title">
+          ゲームをリタイアしますか？
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="retire-confirmation-description">
+            このゲームの投数とストーンは失われ、TOPへ戻ります。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCloseRetireConfirmation}>ゲームへ戻る</Button>
+          <Button color="error" onClick={onConfirmRetire} variant="contained">
+            リタイアする
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppShell>
   )
 }

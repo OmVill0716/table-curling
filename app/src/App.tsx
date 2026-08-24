@@ -2,7 +2,7 @@ import { Button, CssBaseline, Paper, Stack, ThemeProvider, Typography } from '@m
 import { AppShell } from './components/AppShell'
 import { createEmptyHighScores } from './config/highScores'
 import { FieldSelectScreen } from './screens/FieldSelectScreen'
-import { GameScreen } from './screens/GameScreen'
+import { GameSession } from './screens/GameSession'
 import { HowToPlayScreen } from './screens/HowToPlayScreen'
 import { LengthSelectScreen } from './screens/LengthSelectScreen'
 import { ResultScreen } from './screens/ResultScreen'
@@ -46,8 +46,6 @@ export function AppContent() {
   const surface = useGameStore((store) => store.surface)
   const throwDistance = useGameStore((store) => store.throwDistance)
   const gamePhase = useGameStore((store) => store.gamePhase)
-  const completedShots = useGameStore((store) => store.completedShots)
-  const maxShots = useGameStore((store) => store.maxShots)
   const result = useGameStore((store) => store.result)
   const soundEnabled = useGameStore((store) => store.soundEnabled)
   const openGameSetup = useGameStore((store) => store.openGameSetup)
@@ -107,15 +105,7 @@ export function AppContent() {
       if (surface === null || throwDistance === null || gamePhase === null) {
         return <InvalidStateScreen onTop={returnToTop} />
       }
-      return (
-        <GameScreen
-          completedShots={completedShots}
-          gamePhase={gamePhase}
-          maxShots={maxShots}
-          surface={surface}
-          throwDistance={throwDistance}
-        />
-      )
+      return <GameSession surface={surface} throwDistance={throwDistance} />
     case 'result':
       if (surface === null || throwDistance === null || result === null) {
         return <InvalidStateScreen onTop={returnToTop} />

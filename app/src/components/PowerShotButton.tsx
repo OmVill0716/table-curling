@@ -78,6 +78,17 @@ export function PowerShotButton({
   }, [cancelActiveInput])
 
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        cancelActiveInput()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [cancelActiveInput])
+
+  useEffect(() => {
     if (disabled) {
       cancelActiveInput()
     }
