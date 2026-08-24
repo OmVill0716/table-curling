@@ -67,7 +67,7 @@ test('スコア確認と遊び方からTOPへ戻れる', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('効果音設定をメモリ内で切り替えて画面遷移中は維持する', async ({
+test('効果音設定を保存して画面遷移と再読み込み後も維持する', async ({
   page,
 }) => {
   await page.goto('/')
@@ -82,4 +82,8 @@ test('効果音設定をメモリ内で切り替えて画面遷移中は維持�
   await page.getByRole('button', { name: 'TOPへ' }).click()
 
   await expect(page.getByRole('switch', { name: '効果音' })).not.toBeChecked()
+
+  await page.reload()
+  await expect(page.getByRole('switch', { name: '効果音' })).not.toBeChecked()
+  await expect(page.getByText('効果音 OFF')).toBeVisible()
 })
