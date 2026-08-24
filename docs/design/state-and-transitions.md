@@ -22,10 +22,20 @@ type GamePhase =
   | "moving"
   | "review";
 
+type PowerDirection = "increasing" | "decreasing";
+
+type StoneSnapshot = {
+  id: string;
+  position: { x: number; y: number };
+  velocity: { x: number; y: number };
+  speed: number;
+  angularVelocity: number;
+  motionState: "moving" | "stopped" | "outOfBounds";
+};
+
 type StoneResult = {
   id: string;
-  x: number;
-  y: number;
+  position: { x: number; y: number };
   inPlay: boolean;
   score: number;
 };
@@ -43,8 +53,11 @@ type GameStore = {
   completedShots: number;
   maxShots: number;
   displayedPower: number | null;
+  powerDirection: PowerDirection | null;
   soundEnabled: boolean;
-  settledStones: Omit<StoneResult, "score">[];
+  settledStones: StoneSnapshot[];
+  retireConfirmationOpen: boolean;
+  resumePhaseAfterRetire: GamePhase | null;
   result: {
     stones: StoneResult[];
     totalScore: number;
@@ -86,8 +99,8 @@ ZustandとPhysics Runtimeは、次の境界でだけ同期する。
 ### ゲーム開始
 
 - Zustandで確定したSurfaceと投射距離をRuntime生成時に渡す
-- Runtimeを生成し、1投目のBodyとCameraを準備する
-- 準備完了後に`gamePhase`を`ready`へ移す
+- `GameSession`のlayout effectでRuntime、1投目のBody、Camera、Schedulerを準備する
+- StoreはGame Screen遷移時に`gamePhase`を`ready`へ移し、layout effectの準備が完了するまで投射入力を受け付けない
 
 ### 投射開始
 
@@ -107,7 +120,7 @@ ZustandとPhysics Runtimeは、次の境界でだけ同期する。
 
 ## 5. UI表示用の導出状態
 
-`displayedPower`はUI表示用であり、充電時間の正本はRuntime側の時刻とする。毎フレームStoreへ書き込まず、表示値が整数単位で変わった場合だけ更新できる。
+`displayedPower`と`powerDirection`はUI表示用であり、充電時間の正本はRuntime側の時刻とする。毎フレームStoreへ書き込まず、表示値の整数または方向が変わった場合だけ更新する。
 
 ストーンの暫定得点色はRendererが現在座標から導出する。Zustandへ毎フレーム保存せず、最終投射の停止時だけScoringの結果を`result`へ保存する。
 
@@ -118,6 +131,8 @@ Zustand Store全体へ永続化ミドルウェアを適用しない。
 起動時はPersistenceから検証済みのハイスコアと効果音設定だけを受け取り、`screen: "top"`から開始する。ゲーム途中の状態はPersistenceへ渡さない。
 
 Physics RuntimeからlocalStorageへアクセスしない。保存対象、タイミング、キーは[`persistence.md`](../specifications/persistence.md)、ブラウザAPIとの境界は[`external-adapters.md`](./external-adapters.md)を正本とする。
+
+Phase 4では5投目停止時のResult確定までを実装し、`highScoreRank`は`null`とする。Phase 5で同じResult確定境界へハイスコア更新を接続し、「結果を見る」では保存しない。
 
 ## 7. リタイア
 

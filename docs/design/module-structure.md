@@ -115,9 +115,11 @@ game/runtime
     └─→ game/types
 
 game/renderer
+    ├─→ game/scoring/scoreRules
     └─→ game/types
 
 game/scoring
+    ├─→ game/scoring/scoreRules
     └─→ game/types
 
 game/audio
@@ -129,6 +131,7 @@ stores
 
 - 下位モジュールから`screens/`、`components/`、`stores/`をimportしない
 - Runtime、Renderer、Scoring間ではMatter Bodyではなく、共有するゲーム型を受け渡す
+- 得点境界と色は副作用のない`game/scoring/scoreRules`をRendererと最終Scoringで共有する
 - 循環importを作らない
 - ブラウザ副作用を持つモジュールを純粋なゲームルールからimportしない
 
