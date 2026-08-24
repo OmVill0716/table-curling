@@ -214,6 +214,12 @@ describe('Physics Runtime', () => {
     expect(() => runtime.advanceFrame(PHYSICS_STEP_MS)).toThrow(
       'PhysicsRuntime has been disposed',
     )
+    expect(() => runtime.startCharging()).toThrow(
+      'PhysicsRuntime has been disposed',
+    )
+    expect(() => runtime.getPowerReading()).toThrow(
+      'PhysicsRuntime has been disposed',
+    )
     expect(onComplete).not.toHaveBeenCalled()
   })
 })
