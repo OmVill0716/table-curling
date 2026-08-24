@@ -691,6 +691,7 @@ GitHub ActionsなどのCIは導入せず、テスト、ビルド、デプロイ�
 Cloudflare側ではビルドさせず、ローカルでビルドする。
 
 ```bash
+cd app
 npm ci
 npm run build
 ```
@@ -698,7 +699,7 @@ npm run build
 生成物:
 
 ```text
-dist/
+app/dist/
 ```
 
 をCloudflare Pagesへアップロードする。
@@ -706,6 +707,7 @@ dist/
 例:
 
 ```bash
+cd app
 npx wrangler pages deploy dist
 ```
 
@@ -749,32 +751,33 @@ React Routerは使用しない。ブラウザゲームとして、TOP、フィ�
 例:
 
 ```text
-src/
-├─ components/
-│  └─ *.stories.tsx
-├─ screens/
-├─ game/
-│  ├─ audio/
-│  │  ├─ audioAdapter.ts
-│  │  └─ __stories__/
-│  │     └─ CollisionAudioCalibration.stories.tsx
-│  ├─ physics/
-│  │  ├─ matterAdapter.ts
-│  │  ├─ createBodies.ts
-│  │  ├─ gamePhysicsRules.ts
-│  │  └─ __stories__/
-│  │     ├─ PhysicsCalibration.stories.tsx
-│  │     └─ PhysicsCalibrationHarness.tsx
-│  ├─ runtime/
-│  ├─ renderer/
-│  ├─ scoring/
-│  └─ types.ts
-├─ stores/
-├─ config/
-│  ├─ audio.ts
-│  ├─ physics.ts
-│  └─ surfaces.ts
-└─ test/
+app/
+└─ src/
+   ├─ components/
+   │  └─ *.stories.tsx
+   ├─ screens/
+   ├─ game/
+   │  ├─ audio/
+   │  │  ├─ audioAdapter.ts
+   │  │  └─ __stories__/
+   │  │     └─ CollisionAudioCalibration.stories.tsx
+   │  ├─ physics/
+   │  │  ├─ matterAdapter.ts
+   │  │  ├─ createBodies.ts
+   │  │  ├─ gamePhysicsRules.ts
+   │  │  └─ __stories__/
+   │  │     ├─ PhysicsCalibration.stories.tsx
+   │  │     └─ PhysicsCalibrationHarness.tsx
+   │  ├─ runtime/
+   │  ├─ renderer/
+   │  ├─ scoring/
+   │  └─ types.ts
+   ├─ stores/
+   ├─ config/
+   │  ├─ audio.ts
+   │  ├─ physics.ts
+   │  └─ surfaces.ts
+   └─ test/
 ```
 
 構成は実装中に改善してよいが、
@@ -804,7 +807,7 @@ productionアプリには物理調整画面、デバッグメニュー、デバ�
 - 最低PowerのFELT直線投射、最大PowerのFELT・LONG、Surface比較、正面衝突、停止判定のプリセットを用意する
 - 候補値を共通設定形式のJSONとしてコピーできる
 - 自動最適化、自動保存、設定ファイルの自動更新は行わず、採用値を確認して手動反映する
-- Calibration StoryとHarnessをproductionの`dist/`へ含めず、`storybook-static/`もCloudflare Pagesへ公開しない
+- Calibration StoryとHarnessをproductionの`app/dist/`へ含めず、`app/storybook-static/`もCloudflare Pagesへ公開しない
 
 ### Collision Audio Calibration Story
 

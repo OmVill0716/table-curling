@@ -5,22 +5,21 @@
 
 ## コンテキスト
 
-このアプリはバックエンドを持たない静的SPAである。IssueではCloudflare側でビルドせず、ローカルで生成した`dist/`を公開する方針としている。
+このアプリはバックエンドを持たない静的SPAである。IssueではCloudflare側でビルドせず、`app/`でローカル生成した`app/dist/`を公開する方針としている。
 
 ## 決定
 
 lockfileからローカルで依存関係を再現し、テストとVite buildが成功した`dist/`をCloudflare PagesのDirect Uploadで公開する。
 
 ```bash
+cd app
 npm ci
-npm run lint
-npm run test:unit
-npm run test:storybook
-npm run test:e2e
-npm run build
-npm run build-storybook
+npx playwright install chromium webkit
+npm run verify
 npx wrangler pages deploy dist --project-name=<PROJECT_NAME>
 ```
+
+上記の`dist/`は、リポジトリルートから見た`app/dist/`である。
 
 本番デプロイ前の確認ゲート、デプロイ後検証、ロールバックは[`testing-and-deployment.md`](../docs/testing-and-deployment.md)に従う。
 

@@ -1,26 +1,34 @@
 # テスト・ビルド・デプロイ
 
-- 状態: Draft（実装・検証前）
+- 状態: Phase 1環境構築済み（ゲーム機能の検証項目は未実装）
 
 ## 1. ローカル検証
 
-実装時には次のnpm scriptsを用意する。
+npmコマンドはアプリの作業ディレクトリで実行する。Playwrightのブラウザ取得は初回とPlaywright更新時に必要になる。
 
 ```bash
+cd app
 npm ci
+npx playwright install chromium webkit
+npm run verify
+```
+
+`verify`は次のscriptsを順番に実行する。
+
+```bash
 npm run lint
 npm run test:unit
 npm run test:storybook
-npm run test:e2e
 npm run build
+npm run test:e2e
 npm run build-storybook
 ```
 
-依存関係は`package-lock.json`で固定する。Cloudflareへアップロードする成果物は、クリーンなcheckoutに対する`npm ci && npm run build`で再生成できなければならない。
+依存関係は`app/package-lock.json`で固定する。Cloudflareへアップロードする成果物は、クリーンなcheckoutの`app/`における`npm ci && npm run build`で再生成できなければならない。
 
 CIは[ADR-012](../ADR/ADR-012-do-not-add-ci.md)に従って導入せず、上記コマンドをデプロイ前にローカルで手動実行する。
 
-`npm run build`後は、Calibration Story、Harness、Storybook依存コードが`dist/`へ含まれていないことを確認する。`npm run build-storybook`で生成する`storybook-static/`は調整・テスト用成果物であり、Cloudflare Pagesへの公開対象にしない。
+`npm run build`後は、Calibration Story、Harness、Storybook依存コードが`app/dist/`へ含まれていないことを確認する。`npm run build-storybook`で生成する`app/storybook-static/`は調整・テスト用成果物であり、Cloudflare Pagesへの公開対象にしない。
 
 ## 2. 自動テスト
 
@@ -234,13 +242,14 @@ Cloudflare Pagesへの公開は本番変更として扱う。実行直前に、�
 - productionまたはpreviewのどちらへ出すか
 - `git status`とデプロイ対象コミット
 - ローカルテストと`npm run build`の成功
-- `dist/index.html`の存在
-- `dist/`に秘密情報やsource mapなど意図しない成果物がないこと
-- `storybook-static/`が`dist/`に混入していないこと
+- `app/dist/index.html`の存在
+- `app/dist/`に秘密情報やsource mapなど意図しない成果物がないこと
+- `app/storybook-static/`が`app/dist/`に混入していないこと
 
 確認後に初回プロジェクトを作成し、デプロイする。
 
 ```bash
+cd app
 npx wrangler login
 npx wrangler pages project create
 npx wrangler pages deploy dist --project-name=<PROJECT_NAME>
