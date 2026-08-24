@@ -32,6 +32,72 @@ function runFrameSequence(frameDeltas: readonly number[]) {
 }
 
 describe('Physics Runtime', () => {
+  it('Power充電を開始・更新・解放する', () => {
+    const runtime = createPhysicsRuntime({
+      surface: 'WOOD',
+      tuning: constantSpeedTuning,
+    })
+    runtime.addStone('stone-1', { x: 300, y: 1300 })
+
+    expect(runtime.startCharging()).toEqual({
+      value: 1,
+      direction: 'increasing',
+    })
+    expect(runtime.advanceCharging(750)).toEqual({
+      value: 51,
+      direction: 'increasing',
+    })
+    expect(runtime.releaseCharging()).toBe(51)
+    expect(runtime.getPowerReading()).toBeNull()
+  })
+
+  it('Power充電を投射せずキャンセルする', () => {
+    const runtime = createPhysicsRuntime({
+      surface: 'WOOD',
+      tuning: constantSpeedTuning,
+    })
+    runtime.addStone('stone-1', { x: 300, y: 1300 })
+    runtime.startCharging()
+    runtime.advanceCharging(1000)
+
+    runtime.cancelCharging()
+
+    expect(runtime.getPowerReading()).toBeNull()
+    expect(runtime.getSnapshot().stones[0].motionState).toBe('stopped')
+  })
+
+  it('Power充電の不正な順序を拒否する', () => {
+    const runtime = createPhysicsRuntime({
+      surface: 'WOOD',
+      tuning: constantSpeedTuning,
+    })
+    runtime.addStone('stone-1', { x: 300, y: 1300 })
+
+    expect(() => runtime.advanceCharging(1)).toThrow(
+      'Cannot advance charging before it starts',
+    )
+    expect(() => runtime.releaseCharging()).toThrow(
+      'Cannot release charging before it starts',
+    )
+    runtime.startCharging()
+    expect(() => runtime.startCharging()).toThrow(
+      'Cannot start charging in the current state',
+    )
+  })
+
+  it('Power充電時間をPhysics accumulatorへ加えない', () => {
+    const runtime = createPhysicsRuntime({
+      surface: 'WOOD',
+      tuning: constantSpeedTuning,
+    })
+    runtime.addStone('stone-1', { x: 300, y: 1300 })
+    runtime.startCharging()
+    runtime.advanceCharging(1000)
+
+    expect(runtime.getSnapshot()).toMatchObject({ elapsedMs: 0, stepCount: 0 })
+    expect(runtime.getDiagnostics().accumulatorMs).toBe(0)
+  })
+
   it('60Hz、120Hz、混合frame列で同じPhysics結果になる', () => {
     const at60Hz = runFrameSequence(
       Array.from({ length: 60 }, () => 1000 / 60),
@@ -146,6 +212,12 @@ describe('Physics Runtime', () => {
 
     expect(runtime.isDisposed).toBe(true)
     expect(() => runtime.advanceFrame(PHYSICS_STEP_MS)).toThrow(
+      'PhysicsRuntime has been disposed',
+    )
+    expect(() => runtime.startCharging()).toThrow(
+      'PhysicsRuntime has been disposed',
+    )
+    expect(() => runtime.getPowerReading()).toThrow(
       'PhysicsRuntime has been disposed',
     )
     expect(onComplete).not.toHaveBeenCalled()

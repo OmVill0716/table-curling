@@ -15,6 +15,16 @@ Physicsの実行系を、Matter Adapter、Physics Runtime、Animation Frame Sche
 
 ReactとZustandはMatter.js APIを直接呼ばない。RuntimeはGame ScreenのReactコンポーネント内で`useRef`から参照する。
 
+Power計測は次の公開境界を持つ。
+
+- `startCharging`: Power 1から充電を開始する
+- `advanceCharging`: Schedulerから渡された表示中の経過時間を加算し、現在値と増減方向を返す
+- `releaseCharging`: 現在の整数Powerを返して充電を終了する
+- `cancelCharging`: 投射せず充電状態を破棄する
+- `getPowerReading`: 現在の表示値と方向を取得する
+
+Power計測時間とPhysics accumulatorは別々に保持する。`charging`中はMatter Adapterを更新せず、`moving`中はPower計測時間を更新しない。
+
 ## 2. 更新ループ
 
 固定タイムステップとPhysicsパラメータは[`physics.md`](../specifications/physics.md)を正本とする。

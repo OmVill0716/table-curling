@@ -46,4 +46,6 @@ npm run build-storybook
 
 production buildは`dist/`、Storybook buildは`storybook-static/`へ生成される。Cloudflare Pagesへ公開するのは`dist/`だけである。
 
-Phase 3までに全画面、Zustandによる画面遷移、Game Screenのレスポンシブな外枠を実装している。Game ScreenとPhysics Runtimeの接続、投射、5投の進行、採点はPhase 4で実装する。
+Phase 4までに全画面、Zustandによる画面・ゲーム状態遷移、レスポンシブなGame Screen、Physics Runtimeとの接続、Power入力、5投の進行、採点、Result、Retry、リタイア、ページ非表示時の停止・再開を実装している。
+
+ハイスコアと効果音設定の永続化、音声再生、Surface外観の仕上げは未実装であり、Phase 5の対象とする。

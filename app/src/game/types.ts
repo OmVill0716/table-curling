@@ -33,6 +33,13 @@ export interface PhysicsSnapshot {
 
 export type StoneScore = 0 | 10 | 30 | 50 | 100
 
+export type PowerDirection = 'increasing' | 'decreasing'
+
+export interface PowerReading {
+  readonly value: number
+  readonly direction: PowerDirection
+}
+
 export interface StoneResult {
   readonly id: StoneId
   readonly position: Vector2
