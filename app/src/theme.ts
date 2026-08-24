@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material'
+import { SCORE_COLORS } from './game/scoring/scoreRules'
 
 export const gameColors = {
   background: '#eaf5fb',
@@ -8,13 +9,7 @@ export const gameColors = {
   primary: '#126782',
   primaryDark: '#0a485d',
   accent: '#f28f3b',
-  score: {
-    0: '#e9eef2',
-    10: '#75c8ae',
-    30: '#55a6d9',
-    50: '#f6c85f',
-    100: '#ef6461',
-  },
+  score: SCORE_COLORS,
   surface: {
     ICE: '#bde5f5',
     WOOD: '#d6a86e',
