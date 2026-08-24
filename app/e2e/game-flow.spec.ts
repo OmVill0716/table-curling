@@ -1,29 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-
-async function startGame(
-  page: Page,
-  surface: 'ICE' | 'WOOD' | 'FELT' = 'FELT',
-  distance: 'SHORT' | 'MEDIUM' | 'LONG' = 'SHORT',
-) {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'ゲームプレイ' }).click()
-  await page.getByRole('button', { name: `${surface}を選択` }).click()
-  await page.getByRole('button', { name: `${distance}を選択` }).click()
-  await page.getByRole('button', { name: 'ゲーム開始' }).click()
-  await expect(page.getByRole('button', { name: 'ストーンを投射' })).toBeEnabled()
-}
-
-async function throwAtMinimumPower(page: Page) {
-  const button = page.getByRole('button', { name: 'ストーンを投射' })
-  const box = await button.boundingBox()
-  expect(box).not.toBeNull()
-
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
-  await page.mouse.down()
-  await expect(page.getByText('Power調整中')).toBeVisible()
-  await page.mouse.up()
-  await expect(page.getByText('ストーン移動中')).toBeVisible()
-}
+import { startGame, throwAtMinimumPower } from './helpers/game'
 
 test('9カテゴリーすべてでゲームを開始できる', async ({ page }) => {
   for (const surface of ['ICE', 'WOOD', 'FELT'] as const) {
@@ -76,7 +52,7 @@ test('5投を完了してResultとRetryへ進める', async ({ page }) => {
   )
   const expectedTotal = scores.reduce((total, score) => total + score, 0)
   await expect(page.getByLabel(`合計 ${expectedTotal}点`)).toBeVisible()
-  await expect(page.getByText('NEW HIGH SCORE')).toHaveCount(0)
+  await expect(page.getByText(/NEW HIGH SCORE/)).toBeVisible()
 
   await page.getByRole('button', { name: 'Retry' }).click()
   await expect(page.getByRole('heading', { name: 'Shot 1 / 5' })).toBeVisible()

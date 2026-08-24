@@ -1,6 +1,9 @@
 import { createStore } from 'zustand/vanilla'
+import { createEmptyHighScores } from '../config/highScores'
+import { addHighScore } from '../game/persistence/highScoreRanking'
 import type {
   GameResult,
+  HighScores,
   PhysicsSnapshot,
   PowerReading,
   PowerDirection,
@@ -32,9 +35,16 @@ export interface GameState {
   readonly powerDirection: PowerDirection | null
   readonly settledStones: readonly StoneSnapshot[]
   readonly result: GameResult | null
+  readonly highScores: HighScores
   readonly retireConfirmationOpen: boolean
   readonly resumePhaseAfterRetire: GamePhase | null
   readonly soundEnabled: boolean
+}
+
+export interface GameStoreDependencies {
+  readonly now: () => string
+  readonly saveHighScores: (highScores: HighScores) => void
+  readonly saveSoundEnabled: (enabled: boolean) => void
 }
 
 export interface GameActions {
@@ -68,6 +78,12 @@ export interface GameActions {
 export type GameStore = GameState & GameActions
 export type GameStoreApi = ReturnType<typeof createGameStore>
 
+const defaultDependencies: GameStoreDependencies = {
+  now: () => new Date().toISOString(),
+  saveHighScores: () => undefined,
+  saveSoundEnabled: () => undefined,
+}
+
 export function createInitialGameState(
   overrides: Partial<GameState> = {},
 ): GameState {
@@ -82,6 +98,7 @@ export function createInitialGameState(
     powerDirection: null,
     settledStones: [],
     result: null,
+    highScores: createEmptyHighScores(),
     retireConfirmationOpen: false,
     resumePhaseAfterRetire: null,
     soundEnabled: true,
@@ -89,7 +106,18 @@ export function createInitialGameState(
   }
 }
 
-export function createGameStore(overrides: Partial<GameState> = {}) {
+export function createGameStore(
+  overrides: Partial<GameState> = {},
+  dependencies: Partial<GameStoreDependencies> = {},
+) {
+  const resolvedDependencies: GameStoreDependencies = {
+    now: dependencies.now ?? defaultDependencies.now,
+    saveHighScores:
+      dependencies.saveHighScores ?? defaultDependencies.saveHighScores,
+    saveSoundEnabled:
+      dependencies.saveSoundEnabled ?? defaultDependencies.saveSoundEnabled,
+  }
+
   return createStore<GameStore>()((set, get) => ({
     ...createInitialGameState(overrides),
 
@@ -239,6 +267,25 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
         return
       }
 
+      let result = finalResult ?? null
+      let highScores = state.highScores
+
+      if (
+        finalResult !== undefined &&
+        state.surface !== null &&
+        state.throwDistance !== null
+      ) {
+        const update = addHighScore(
+          state.highScores,
+          state.surface,
+          state.throwDistance,
+          finalResult.totalScore,
+          resolvedDependencies.now(),
+        )
+        highScores = update.highScores
+        result = { ...finalResult, highScoreRank: update.rank }
+      }
+
       set({
         completedShots,
         gamePhase: 'review',
@@ -247,8 +294,17 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
           position: { ...stone.position },
           velocity: { ...stone.velocity },
         })),
-        result: finalResult ?? null,
+        result,
+        highScores,
       })
+
+      if (finalResult !== undefined) {
+        try {
+          resolvedDependencies.saveHighScores(highScores)
+        } catch {
+          // Persistence is best effort and must not stop the game.
+        }
+      }
     },
 
     prepareNextShot: () => {
@@ -408,7 +464,15 @@ export function createGameStore(overrides: Partial<GameState> = {}) {
     },
 
     setSoundEnabled: (soundEnabled) => {
+      if (get().soundEnabled === soundEnabled) {
+        return
+      }
       set({ soundEnabled })
+      try {
+        resolvedDependencies.saveSoundEnabled(soundEnabled)
+      } catch {
+        // Persistence is best effort and must not stop the game.
+      }
     },
   }))
 }

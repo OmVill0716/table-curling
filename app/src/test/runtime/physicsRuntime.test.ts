@@ -198,6 +198,25 @@ describe('Physics Runtime', () => {
     )
   })
 
+  it('Physicsイベントをstep番号付きbatchで通知する', () => {
+    const onEvents = vi.fn()
+    const runtime = createPhysicsRuntime({
+      surface: 'WOOD',
+      tuning: constantSpeedTuning,
+      onEvents,
+    })
+    runtime.addStone('stone-1', { x: -30, y: 1300 })
+    runtime.launchStone('stone-1', 100)
+
+    runtime.advanceFrame(PHYSICS_STEP_MS)
+    runtime.advanceFrame(PHYSICS_STEP_MS)
+
+    expect(onEvents).toHaveBeenCalledTimes(1)
+    expect(onEvents).toHaveBeenCalledWith([
+      { type: 'outOfBounds', stepCount: 1, stoneId: 'stone-1' },
+    ])
+  })
+
   it('dispose後の更新と通知を拒否する', () => {
     const onComplete = vi.fn()
     const runtime = createPhysicsRuntime({

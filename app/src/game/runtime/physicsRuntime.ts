@@ -7,6 +7,7 @@ import {
 import type {
   PowerReading,
   PhysicsSnapshot,
+  PhysicsGameEvent,
   StoneId,
   Surface,
   Vector2,
@@ -26,6 +27,7 @@ export interface PhysicsRuntimeOptions {
   readonly surface: Surface
   readonly tuning: PhysicsTuning
   readonly onComplete?: (snapshot: PhysicsSnapshot) => void
+  readonly onEvents?: (events: readonly PhysicsGameEvent[]) => void
 }
 
 export interface PhysicsRuntimeDiagnostics {
@@ -74,6 +76,7 @@ export function createPhysicsRuntime({
   surface,
   tuning,
   onComplete,
+  onEvents,
 }: PhysicsRuntimeOptions): PhysicsRuntime {
   const adapter = createMatterAdapter({ surface, tuning })
   const fixedTimestep = createFixedTimestep({
@@ -191,9 +194,30 @@ export function createPhysicsRuntime({
       let completedSnapshot: PhysicsSnapshot | null = null
 
       const result = fixedTimestep.advance(frameDeltaMs, (stepMs) => {
-        adapter.update(stepMs)
+        const stepEvents = adapter.update(stepMs)
         elapsedMs += stepMs
         stepCount += 1
+
+        const events: PhysicsGameEvent[] = [
+          ...stepEvents.collisions.map(
+            ({ stoneIds, relativeSpeed }): PhysicsGameEvent => ({
+              type: 'stoneCollision',
+              stepCount,
+              stoneIds,
+              relativeSpeed,
+            }),
+          ),
+          ...stepEvents.outOfBoundsStoneIds.map(
+            (stoneId): PhysicsGameEvent => ({
+              type: 'outOfBounds',
+              stepCount,
+              stoneId,
+            }),
+          ),
+        ]
+        if (events.length > 0) {
+          onEvents?.(events)
+        }
 
         if (completionPending && adapter.areAllStonesComplete()) {
           completionPending = false

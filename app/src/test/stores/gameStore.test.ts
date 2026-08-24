@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { GameResult, PhysicsSnapshot } from '../../game/types'
+import type { GameResult, HighScores, PhysicsSnapshot } from '../../game/types'
 import { createGameStore } from '../../stores/gameStore'
 
 const result: GameResult = {
@@ -33,8 +33,7 @@ const snapshot: PhysicsSnapshot = {
 
 const initialPower = { value: 1, direction: 'increasing' } as const
 
-function startGame() {
-  const store = createGameStore()
+function startGame(store = createGameStore()) {
   const actions = store.getState()
   actions.openGameSetup()
   actions.selectSurface('WOOD')
@@ -72,6 +71,11 @@ describe('gameStore', () => {
     expect(state.powerDirection).toBeNull()
     expect(state.settledStones).toEqual([])
     expect(state.result).toBeNull()
+    expect(state.highScores).toEqual({
+      ICE: { SHORT: [], MEDIUM: [], LONG: [] },
+      WOOD: { SHORT: [], MEDIUM: [], LONG: [] },
+      FELT: { SHORT: [], MEDIUM: [], LONG: [] },
+    })
     expect(state.retireConfirmationOpen).toBe(false)
     expect(state.soundEnabled).toBe(true)
   })
@@ -215,6 +219,7 @@ describe('gameStore', () => {
   it('5投目停止時にResultを一度だけ確定する', () => {
     const store = startGame()
     finishGame(store)
+    const confirmedResult = store.getState().result
 
     expect(store.getState()).toMatchObject({
       screen: 'game',
@@ -225,7 +230,50 @@ describe('gameStore', () => {
 
     const replacement = { ...result, totalScore: 0 }
     store.getState().completeShot(snapshot, replacement)
-    expect(store.getState().result).toBe(result)
+    expect(store.getState().result).toBe(confirmedResult)
+  })
+
+  it('5投目停止時だけハイスコアと順位を確定して保存する', () => {
+    const saved: HighScores[] = []
+    const store = startGame(
+      createGameStore(
+        {},
+        {
+          now: () => '2026-08-24T10:00:00+09:00',
+          saveHighScores: (highScores) => saved.push(highScores),
+        },
+      ),
+    )
+
+    finishGame(store)
+
+    expect(saved).toHaveLength(1)
+    expect(saved[0].WOOD.LONG).toEqual([
+      { score: 100, achievedAt: '2026-08-24T10:00:00+09:00' },
+    ])
+    expect(store.getState().result?.highScoreRank).toBe(1)
+    expect(store.getState().highScores).toBe(saved[0])
+
+    store.getState().viewResult()
+    store.getState().viewResult()
+    expect(saved).toHaveLength(1)
+  })
+
+  it('保存失敗でもResultとメモリ上のハイスコアを維持する', () => {
+    const store = startGame(
+      createGameStore(
+        {},
+        {
+          saveHighScores: () => {
+            throw new Error('storage blocked')
+          },
+        },
+      ),
+    )
+
+    expect(() => finishGame(store)).not.toThrow()
+    expect(store.getState().result?.highScoreRank).toBe(1)
+    expect(store.getState().highScores.WOOD.LONG).toHaveLength(1)
   })
 
   it('5投目より前のResultと5投目のResult不足を拒否する', () => {
@@ -425,12 +473,17 @@ describe('gameStore', () => {
   })
 
   it('効果音設定だけを切り替える', () => {
-    const store = createGameStore({
-      screen: 'selectionConfirm',
-      surface: 'FELT',
-      throwDistance: 'SHORT',
-    })
+    const saved: boolean[] = []
+    const store = createGameStore(
+      {
+        screen: 'selectionConfirm',
+        surface: 'FELT',
+        throwDistance: 'SHORT',
+      },
+      { saveSoundEnabled: (enabled) => saved.push(enabled) },
+    )
 
+    store.getState().setSoundEnabled(false)
     store.getState().setSoundEnabled(false)
 
     expect(store.getState()).toMatchObject({
@@ -439,6 +492,21 @@ describe('gameStore', () => {
       throwDistance: 'SHORT',
       soundEnabled: false,
     })
+    expect(saved).toEqual([false])
+  })
+
+  it('効果音設定の保存失敗をゲーム状態へ伝播させない', () => {
+    const store = createGameStore(
+      {},
+      {
+        saveSoundEnabled: () => {
+          throw new Error('storage blocked')
+        },
+      },
+    )
+
+    expect(() => store.getState().setSoundEnabled(false)).not.toThrow()
+    expect(store.getState().soundEnabled).toBe(false)
   })
 
   it('Store instance同士で状態を共有しない', () => {
