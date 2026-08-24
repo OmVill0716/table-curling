@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006 --no-open",
+    "test:e2e": "playwright test",
     "test:storybook": "vitest run --project=storybook",
     "test:unit": "vitest run --project=unit"
   },
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
     "@storybook/addon-vitest": "10.5.10",
     "@storybook/react-vite": "10.5.10",
     "@types/matter-js": "0.20.2",
