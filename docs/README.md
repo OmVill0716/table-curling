@@ -7,7 +7,8 @@
 - [`table-curling-react-cloudflare-issue.md`](../table-curling-react-cloudflare-issue.md): 要求の原典。目的、スコープ、受け入れ条件を管理する
 - [`specifications/README.md`](./specifications/README.md): 目的別に分割したMVP仕様の正本と読み方
 - [`game-specification.md`](./game-specification.md): 既存リンクと全体案内のための仕様入口
-- [`architecture.md`](./architecture.md): React、Zustand、Physics、Rendererの責務とデータフロー
+- [`design/README.md`](./design/README.md): 目的別に分割したモジュール責務、依存方向、データフローの正本
+- [`architecture.md`](./architecture.md): 既存リンクと全体案内のための設計入口
 - [`testing-and-deployment.md`](./testing-and-deployment.md): 検証方法、Cloudflare Pagesへの公開手順、ロールバック
 - [`ADR/`](../ADR/README.md): 重要な技術判断、その理由、置換履歴
 

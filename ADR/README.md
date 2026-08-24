@@ -6,7 +6,7 @@ ADRは、Table Curlingの重要な設計判断について、背景、決定、�
 
 - [`table-curling-react-cloudflare-issue.md`](../table-curling-react-cloudflare-issue.md): 何を実現するかという要求の原典
 - [`docs/specifications/`](../docs/specifications/README.md): MVPが満たす具体的な動作と数値の正本
-- [`docs/architecture.md`](../docs/architecture.md): 現在の責務分割とデータフロー
+- [`docs/design/`](../docs/design/README.md): 現在の責務分割とデータフロー
 - `ADR/`: なぜその方式を選んだかという判断の記録
 
 実装時は、まず目的に対応するAccepted ADRを確認し、具体的な動作と数値はリンク先の仕様書を参照する。Superseded ADRは過去の経緯を確認する場合だけ使用し、現行判断として実装しない。
@@ -59,7 +59,7 @@ ADRは、Table Curlingの重要な設計判断について、背景、決定、�
 
 ### 状態管理・データ保存
 
-関連仕様: [`persistence.md`](../docs/specifications/persistence.md)、[`architecture.md`](../docs/architecture.md)
+関連仕様・設計: [`persistence.md`](../docs/specifications/persistence.md)、[`state-and-transitions.md`](../docs/design/state-and-transitions.md)
 
 | ADR | 判断 |
 | --- | --- |

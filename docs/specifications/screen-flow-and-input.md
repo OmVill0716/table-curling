@@ -170,4 +170,4 @@ Canvasの縦横比と描画倍率は[`coordinates-and-rendering.md`](./coordinat
 
 Animation Frameは`charging`と`moving`で継続する。`ready`と`review`では、状態、Camera、表示サイズが変わった時に1回だけ描画する。
 
-Animation Frameの生成・破棄とReactライフサイクル上の責務は[`../architecture.md`](../architecture.md)を参照する。
+Animation Frameの生成・破棄とReactライフサイクル上の責務は[`physics-runtime.md`](../design/physics-runtime.md)を参照する。

@@ -140,7 +140,7 @@ type GameState = {
 };
 ```
 
-正確な状態モデルは[`docs/architecture.md`](./docs/architecture.md)を正本とする。
+正確な状態モデルは[`docs/design/state-and-transitions.md`](./docs/design/state-and-transitions.md)を正本とする。
 
 ### Zustand に持たせるもの
 

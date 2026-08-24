@@ -18,6 +18,6 @@ MVPの詳細仕様は、目的別に[`specifications/`](./specifications/README.
 
 ## 関連文書
 
-- [`architecture.md`](./architecture.md): React、Zustand、Physics Runtime、Rendererの責務とデータフロー
+- [`design/README.md`](./design/README.md): React、Zustand、Physics Runtime、Rendererの責務とデータフロー
 - [`testing-and-deployment.md`](./testing-and-deployment.md): 検証方法、Cloudflare Pagesへの公開手順、ロールバック
 - [`ADR/`](../ADR/README.md): 重要な設計判断と、その理由・影響

@@ -7,7 +7,7 @@
 このディレクトリは、Table CurlingのMVPが満たす具体的な動作と数値の正本を、目的別に管理する。
 
 - 仕様書: 何を満たすか
-- [`architecture.md`](../architecture.md): React、Zustand、Physics Runtime、Rendererがどう責務を分担するか
+- [`design/`](../design/README.md): React、Zustand、Physics Runtime、Rendererがどう責務を分担するか
 - [`ADR/`](../../ADR/README.md): なぜその方式を選んだか
 - [`table-curling-react-cloudflare-issue.md`](../../table-curling-react-cloudflare-issue.md): 目的、スコープ、受け入れ条件
 
