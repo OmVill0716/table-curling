@@ -1,6 +1,5 @@
 import { Button, CssBaseline, Paper, Stack, ThemeProvider, Typography } from '@mui/material'
 import { AppShell } from './components/AppShell'
-import { createEmptyHighScores } from './config/highScores'
 import { FieldSelectScreen } from './screens/FieldSelectScreen'
 import { GameSession } from './screens/GameSession'
 import { HowToPlayScreen } from './screens/HowToPlayScreen'
@@ -12,8 +11,6 @@ import { TopScreen } from './screens/TopScreen'
 import { GameStoreProvider } from './stores/GameStoreProvider'
 import { useGameStore } from './stores/useGameStore'
 import { appTheme } from './theme'
-
-const emptyHighScores = createEmptyHighScores()
 
 function InvalidStateScreen({ onTop }: { readonly onTop: () => void }) {
   return (
@@ -47,6 +44,7 @@ export function AppContent() {
   const throwDistance = useGameStore((store) => store.throwDistance)
   const gamePhase = useGameStore((store) => store.gamePhase)
   const result = useGameStore((store) => store.result)
+  const highScores = useGameStore((store) => store.highScores)
   const soundEnabled = useGameStore((store) => store.soundEnabled)
   const openGameSetup = useGameStore((store) => store.openGameSetup)
   const openScore = useGameStore((store) => store.openScore)
@@ -120,7 +118,7 @@ export function AppContent() {
         />
       )
     case 'score':
-      return <ScoreScreen highScores={emptyHighScores} onBack={returnToTop} />
+      return <ScoreScreen highScores={highScores} onBack={returnToTop} />
     case 'howToPlay':
       return <HowToPlayScreen onBack={returnToTop} />
     default:
